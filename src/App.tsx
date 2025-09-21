@@ -9,8 +9,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 // 导入你的两个页面组件
-import LoginScreen from './LoginScreen';
-import IssueListScreen from './IssuesScreen';
+import LoginScreen from './screens/LoginScreen';
+import IssueListScreen from './screens/IssuesScreen';
 
 // 创建一个导航器对象
 const Stack = createNativeStackNavigator();

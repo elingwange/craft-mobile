@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 // 导入你的 API 服务文件，假设它叫 issuesApi.js
 // 请确保你已经创建了这个文件并包含了我们之前讨论的 fetchIssues 函数
-import { fetchIssues } from './IssueApi';
+import { fetchIssues } from '../services/IssueApi';
 
 // 定义导航相关的类型 (保持不变)
 type RootStackParamList = {
