@@ -14,6 +14,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { login } from './AuthApi'; // Import the new login function
 // 从 @react-navigation/native-stack 导入 NativeStackScreenProps
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // 定义你的导航器中所有页面的类型
 type RootStackParamList = {
@@ -35,15 +36,22 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
       Alert.alert('提示', '请阅读并同意隐私政策');
       return;
     }
+    // ✅ 正确做法：直接使用新的值
+    const newUserName = 'abc';
+    const newEmail = 'abc@gmail.com';
+    const newPassword = 'Abc123@';
 
-    //    navigation.navigate('Issues');
+    // 可选：如果 UI 绑定了这些值，你仍然可以更新状态
+    setUserName(newUserName);
+    setEmail(newEmail);
+    setPassword(newPassword);
 
-    // Call the login API
-    const token = await login(userName, email, password);
+    // Call the login API with the new values
+    const token = await login(newUserName, newEmail, newPassword);
 
     if (token) {
-      // Login was successful, now navigate to the next screen
-      console.log('Login successful, received token:', token);
+      await AsyncStorage.setItem('userToken', token);
+      console.log('Token saved successfully!');
       navigation.navigate('Issues');
     } else {
       // Login failed, the login function already showed an alert

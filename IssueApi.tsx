@@ -1,4 +1,5 @@
 // issuesApi.ts
+import api from './ApiService';
 
 // 定义后端 API 返回的任务状态和优先级类型
 type IssueStatusApi = 'open' | 'in_progress' | 'completed';
@@ -24,10 +25,6 @@ interface IssueUIData {
   priority: 'Low' | 'Medium' | 'High';
   created: string;
 }
-
-// 定义 API 的基础 URL，请替换为你自己的后端地址
-const IP = '10.176.230.168';
-const API_BASE_URL: string = `http://${IP}:5555`;
 
 // 这是一个将后端返回的状态和优先级字符串映射到前端显示文本的函数
 // 这样可以确保后端字段与前端 UI 的一致性
@@ -57,25 +54,16 @@ const mapApiDataToUI = (issue: IssueApiData): IssueUIData => {
 };
 
 // fetchIssues 函数现在接收一个 token 参数，并返回一个 Promise，该 Promise 解析为一个 IssueUIData 数组
-export const fetchIssues = async (token: string): Promise<IssueUIData[]> => {
+export const fetchIssues = async (): Promise<IssueUIData[]> => {
   try {
-    const response: Response = await fetch(`${API_BASE_URL}/issues/list`, {
-      method: 'GET',
+    const response = await api.get('/issues/list', {
       headers: {
-        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     });
+    console.log('Login successful, received data:', response.data);
 
-    if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('Unauthorized: Please log in again.');
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: IssueApiData[] = await response.json();
-    return data.map(mapApiDataToUI);
+    return response.data.map(mapApiDataToUI);
   } catch (error) {
     console.error('Could not fetch issues:', error);
     return [];
