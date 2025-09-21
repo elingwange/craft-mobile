@@ -5,12 +5,12 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // 导入你的 API 服务文件，假设它叫 issuesApi.js
 // 请确保你已经创建了这个文件并包含了我们之前讨论的 fetchIssues 函数
@@ -52,7 +52,7 @@ const Badge = ({ text, color }: { text: string; color: string }) => (
 );
 
 const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
-  const [issues, setIssues] = useState([]);
+  const [issues, setIssues] = useState<Issue[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // 临时使用一个硬编码的 JWT Token 进行测试
