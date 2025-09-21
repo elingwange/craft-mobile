@@ -35,19 +35,20 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
       Alert.alert('提示', '请阅读并同意隐私政策');
       return;
     }
-    navigation.navigate('Issues');
+
+    //    navigation.navigate('Issues');
 
     // Call the login API
-    // const token = await login(userName, email, password);
+    const token = await login(userName, email, password);
 
-    // if (token) {
-    //   // Login was successful, now navigate to the next screen
-    //   console.log('Login successful, received token:', token);
-    //   navigation.navigate('Issues');
-    // } else {
-    //   // Login failed, the login function already showed an alert
-    //   console.log('Login failed');
-    // }
+    if (token) {
+      // Login was successful, now navigate to the next screen
+      console.log('Login successful, received token:', token);
+      navigation.navigate('Issues');
+    } else {
+      // Login failed, the login function already showed an alert
+      console.log('Login failed');
+    }
   };
 
   const handleSignUp = (): void => {

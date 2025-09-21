@@ -1,7 +1,6 @@
 import { Alert } from 'react-native';
 
 const IP = '10.176.230.168';
-//const IP = '127.0.0.1';
 const API_BASE_URL: string = `http://${IP}:8889`;
 
 // This function handles the login request
@@ -11,8 +10,14 @@ export const login = async (
   password: string,
 ): Promise<string | null> => {
   try {
-    var params = JSON.stringify({ userName, email, password });
-    console.log('---- Login params:', params);
+    var loginParams = { userName, email, password };
+    loginParams = {
+      userName: '',
+      email: 'evan@example.com',
+      password: 'MySuperSecretPassword123@',
+    };
+
+    var params = JSON.stringify(loginParams);
 
     const response = await fetch(`${API_BASE_URL}/users/login`, {
       method: 'POST',
@@ -22,7 +27,7 @@ export const login = async (
       body: params,
     });
 
-    console.error('---- Login response:', response);
+    //console.error('---- Login response:', response);
 
     if (!response.ok) {
       const errorData = await response.json();
