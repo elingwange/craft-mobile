@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -11,6 +11,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 // 导入你的 API 服务文件，假设它叫 issuesApi.js
 // 请确保你已经创建了这个文件并包含了我们之前讨论的 fetchIssues 函数
@@ -54,34 +55,39 @@ const Badge = ({ text, color }: { text: string; color: string }) => (
 const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  useFocusEffect(
+    useCallback(() => {
+      const getIssues = async () => {
+        setIsLoading(true);
+        try {
+          // ✅ 在这里调用 API，并用返回的数据更新状态
+          const fetchedIssues = await fetchIssues();
+          setIssues(fetchedIssues);
+        } catch (error) {
+          console.error('获取 Issue 失败:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
 
-  useEffect(() => {
-    const getIssues = async () => {
-      setIsLoading(true);
-      // 调用 API 时，将 Token 作为参数传递
-      const fetchedIssues = await fetchIssues();
-      console.log('Fetched Issues:', fetchedIssues); // 调试输出
+      getIssues();
 
-      setIssues(fetchedIssues);
-      setIsLoading(false);
-    };
+      return () => {
+        // 可选：在这里添加清理逻辑
+      };
+    }, []),
+  );
 
-    getIssues();
-  }, []); // 依赖数组为空，表示只在组件挂载时运行一次
-  // ✅ 添加点击处理函数
-  const handlePressIssue = (item: Issue) => {
-    // 导航到 'IssueDetail' 屏幕，并传递整个 issue 对象
-    // 这个对象将作为参数在 IssueDetail 页面被访问
-    navigation.navigate('IssueDetail', { issue: issueItem });
+  const handleNewIssuePress = () => {
+    // ✅ 新增的函数：导航到 AddIssue 页面
+    navigation.navigate('AddIssue');
   };
 
   const renderItem = ({ item }: { item: Issue }) => (
-    // 使用 TouchableOpacity 让列表项可点击
     <TouchableOpacity
       style={styles.issueRow}
       onPress={() => navigation.navigate('IssueDetail', { issue: item })}
     >
-      {/* 列表项的内容 */}
       <Text style={[styles.issueCell, styles.titleCell]} numberOfLines={1}>
         {item.title}
       </Text>
@@ -95,7 +101,6 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
     </TouchableOpacity>
   );
 
-  // 列表的头部 (保持不变)
   const ListHeader = () => (
     <View style={styles.listHeader}>
       <Text style={[styles.headerText, styles.titleCell]}>Title</Text>
@@ -104,12 +109,11 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
       <Text style={[styles.headerText, styles.createdCell]}>Created</Text>
     </View>
   );
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
       <View style={styles.container}>
-        {/* 顶部导航 */}
+        {/* ... (顶部导航保持不变) */}
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
@@ -119,20 +123,21 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
             <Text style={styles.headerTitle}>Back to Dashboard</Text>
           </TouchableOpacity>
           <Text style={styles.screenTitle}>Issues</Text>
-          <TouchableOpacity style={styles.newIssueButton}>
+          <TouchableOpacity
+            style={styles.newIssueButton}
+            onPress={handleNewIssuePress}
+          >
             <Icon name="add" size={20} color="#FFF" />
             <Text style={styles.newIssueButtonText}>New Issue</Text>
           </TouchableOpacity>
         </View>
 
-        {/* 任务列表 */}
         <View style={styles.listContainer}>
-          {/* 根据加载状态显示加载指示器或列表 */}
           {isLoading ? (
             <ActivityIndicator size="large" color="#fff" style={{ flex: 1 }} />
           ) : (
             <FlatList
-              data={issues} // <-- 使用从 API 获取的数据
+              data={issues}
               renderItem={renderItem}
               keyExtractor={item => item.id}
               ListHeaderComponent={ListHeader}

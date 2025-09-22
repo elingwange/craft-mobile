@@ -12,6 +12,7 @@ import LoginScreen from './screens/LoginScreen';
 import IssueListScreen from './screens/IssuesScreen';
 import IssueDetailScreen from './screens/IssueDetailScreen';
 import EditIssueScreen from './screens/EditIssueScreen';
+import NewIssueScreen from './screens/NewIssueScreen';
 
 // 创建一个导航器对象
 const Stack = createNativeStackNavigator();
@@ -44,6 +45,11 @@ function App() {
         <Stack.Screen
           name="EditIssue"
           component={EditIssueScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="AddIssue"
+          component={NewIssueScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

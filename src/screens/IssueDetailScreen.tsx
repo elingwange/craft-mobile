@@ -7,10 +7,12 @@ import {
   TouchableOpacity,
   ScrollView,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
+import { deleteIssue } from '../services/IssueApi';
 
 // 定义从导航参数中接收的数据类型
 interface IssueDetailData {
@@ -49,8 +51,27 @@ const IssueDetailScreen: React.FC<IssueDetailScreenProps> = () => {
     navigation.navigate('EditIssue', { issue: issue });
   };
 
-  const handleDelete = () => {
-    console.log('点击删除', issue.id);
+  const handleDelete = async () => {
+    Alert.alert('确认删除', '确认要永久删除这个任务？', [
+      {
+        text: '取消',
+        style: 'cancel',
+      },
+      {
+        text: '删除',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            // ✅ 只有在用户点击“删除”后，才执行实际的删除逻辑
+            await deleteIssue(issue.id);
+            console.log('Issue 删除成功！');
+            navigation.goBack(); // 删除成功后返回到列表页
+          } catch (error) {
+            Alert.alert('错误', '删除任务失败，请稍后重试。');
+          }
+        },
+      },
+    ]);
   };
 
   const statusColors = {
