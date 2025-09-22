@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 // 导入你的 API 服务文件，假设它叫 issuesApi.js
 // 请确保你已经创建了这个文件并包含了我们之前讨论的 fetchIssues 函数
-import { fetchIssues } from './IssueApi';
+import { fetchIssues } from '../services/IssueApi';
 
 // 定义导航相关的类型 (保持不变)
 type RootStackParamList = {
@@ -55,26 +55,33 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 临时使用一个硬编码的 JWT Token 进行测试
-  // 注意：在实际应用中，你需要从登录流程中动态获取并存储它
-  const temporaryToken =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlYjRiZDRkYi1kODBkLTQyZmQtYjU2Ny02NDM5MmNhYzZkZTkiLCJqdGkiOiI0NzQ3M2ZkYS1kZDE5LTRiZjItOGNlMS1jNzJkOWIzNGUzNmUiLCJleHAiOjE3ODk2MDY4MTQsImlzcyI6IlRhc2tNYW5hZ2VtZW50QXBpSXNzdWVyIiwiYXVkIjoiVGFza01hbmFnZW1lbnRBcGkifQ.Q9M9Fbg2H49nj84vmtwl7INgxiz9buKk2e8ovq8P89M';
-
   useEffect(() => {
     const getIssues = async () => {
       setIsLoading(true);
       // 调用 API 时，将 Token 作为参数传递
-      const fetchedIssues = await fetchIssues(temporaryToken);
+      const fetchedIssues = await fetchIssues();
+      console.log('Fetched Issues:', fetchedIssues); // 调试输出
+
       setIssues(fetchedIssues);
       setIsLoading(false);
     };
 
     getIssues();
   }, []); // 依赖数组为空，表示只在组件挂载时运行一次
+  // ✅ 添加点击处理函数
+  const handlePressIssue = (item: Issue) => {
+    // 导航到 'IssueDetail' 屏幕，并传递整个 issue 对象
+    // 这个对象将作为参数在 IssueDetail 页面被访问
+    navigation.navigate('IssueDetail', { issue: issueItem });
+  };
 
-  // 渲染列表中的每一项 (保持不变)
   const renderItem = ({ item }: { item: Issue }) => (
-    <View style={styles.issueRow}>
+    // 使用 TouchableOpacity 让列表项可点击
+    <TouchableOpacity
+      style={styles.issueRow}
+      onPress={() => navigation.navigate('IssueDetail', { issue: item })}
+    >
+      {/* 列表项的内容 */}
       <Text style={[styles.issueCell, styles.titleCell]} numberOfLines={1}>
         {item.title}
       </Text>
@@ -85,7 +92,7 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
         <Badge text={item.priority} color={priorityColors[item.priority]} />
       </View>
       <Text style={[styles.issueCell, styles.createdCell]}>{item.created}</Text>
-    </View>
+    </TouchableOpacity>
   );
 
   // 列表的头部 (保持不变)
@@ -226,11 +233,11 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   statusCell: {
-    flex: 1.5,
+    flex: 2,
     alignItems: 'flex-start',
   },
   priorityCell: {
-    flex: 1.5,
+    flex: 2,
     alignItems: 'flex-start',
   },
   createdCell: {
@@ -245,7 +252,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: '#FFF',
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: 'bold',
   },
 });

@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
-import { login } from './AuthApi'; // Import the new login function
+import { login } from '../services/AuthApi'; // Import the new login function
 // 从 @react-navigation/native-stack 导入 NativeStackScreenProps
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -77,7 +77,7 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.headerLogoContainer}>
         <Image
-          source={require('./assets/images/app_logo2.png')}
+          source={require('../../assets/images/app_logo2.png')}
           style={styles.logo}
         />
         <Text style={styles.craftText}>Craft</Text>
