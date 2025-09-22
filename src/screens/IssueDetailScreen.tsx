@@ -1,5 +1,5 @@
 // IssueDetailScreen.tsx
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,11 +8,14 @@ import {
   ScrollView,
   StatusBar,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { deleteIssue } from '../services/IssueApi';
+import { fetchIssueById } from '../services/IssueApi';
+import { useFocusEffect } from '@react-navigation/native';
 
 // 定义从导航参数中接收的数据类型
 interface IssueDetailData {
@@ -23,12 +26,11 @@ interface IssueDetailData {
   priority: 'Low' | 'Medium' | 'High';
   created: string;
 }
-
-// 定义路由参数的类型
 type RootStackParamList = {
   Issues: undefined;
+  // ✅ 修改类型，现在它接收一个名为 'issueId' 的 number 类型参数
   IssueDetail: {
-    issue: IssueDetailData;
+    issueId: number;
   };
 };
 
@@ -37,18 +39,45 @@ type IssueDetailScreenRouteProp = RouteProp<RootStackParamList, 'IssueDetail'>;
 interface IssueDetailScreenProps {}
 
 const IssueDetailScreen: React.FC<IssueDetailScreenProps> = () => {
-  const route = useRoute<IssueDetailScreenRouteProp>();
-  const { issue } = route.params;
+  const route = useRoute<RouteProp<RootStackParamList, 'IssueDetail'>>();
   const navigation = useNavigation();
 
-  console.log('---- issue', issue);
+  // ✅ 现在可以直接解构出 issueId
+  const { issueId } = route.params;
+
+  const [issue, setIssue] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  console.log('---- issueId', issueId); // 现在这里会显示正确的 ID
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchDetail = async () => {
+        setIsLoading(true);
+        try {
+          const fetchedIssue = await fetchIssueById(issueId);
+          setIssue(fetchedIssue);
+        } catch (error) {
+          // 处理错误，例如显示错误信息
+          console.error('获取任务详情失败', error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchDetail();
+      return () => {};
+    }, [issueId]),
+  );
 
   const handleGoBack = () => {
     navigation.goBack();
   };
 
   const handleEdit = () => {
-    navigation.navigate('EditIssue', { issue: issue });
+    // ✅ 确保在导航前 issue 存在
+    if (issue) {
+      navigation.navigate('EditIssue', { issue: issue });
+    }
   };
 
   const handleDelete = async () => {
@@ -62,7 +91,7 @@ const IssueDetailScreen: React.FC<IssueDetailScreenProps> = () => {
         style: 'destructive',
         onPress: async () => {
           try {
-            // ✅ 只有在用户点击“删除”后，才执行实际的删除逻辑
+            // 只有在用户点击“删除”后，才执行实际的删除逻辑
             await deleteIssue(issue.id);
             console.log('Issue 删除成功！');
             navigation.goBack(); // 删除成功后返回到列表页
@@ -97,69 +126,83 @@ const IssueDetailScreen: React.FC<IssueDetailScreenProps> = () => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
       <ScrollView contentContainerStyle={styles.container}>
-        {/* ✅ 顶部导航布局 */}
-        <View style={styles.header}>
-          {/* 第一行：返回按钮 */}
-          <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
-            <Feather name="arrow-left" size={24} color="#E0E0E0" />
-            <Text style={styles.backButtonText}>Back to Issues</Text>
-          </TouchableOpacity>
-          {/* 第二行：标题和按钮 */}
-          <View style={styles.headerTitleContainer}>
-            <Text style={styles.title}>{issue.title}</Text>
+        {isLoading ? (
+          // ✅ 如果正在加载，显示加载指示器
+          <ActivityIndicator size="large" color="#fff" style={{ flex: 1 }} />
+        ) : !issue ? (
+          // ✅ 如果加载完成但数据为空，显示一个提示
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>任务详情不存在。</Text>
+            <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+              <Feather name="arrow-left" size={24} color="#E0E0E0" />
+              <Text style={styles.backButtonText}>返回列表</Text>
+            </TouchableOpacity>
           </View>
-          <View style={styles.headerTitleContainer}>
-            <View style={styles.headerButtons}>
-              <TouchableOpacity onPress={handleEdit} style={styles.button}>
-                <Feather name="edit-2" size={16} color="#E0E0E0" />
-                <Text style={styles.buttonText}>Edit</Text>
-              </TouchableOpacity>
+        ) : (
+          // ✅ 只有当数据可用时，才渲染详情内容
+          <>
+            <View style={styles.header}>
               <TouchableOpacity
-                onPress={handleDelete}
-                style={[styles.button, styles.deleteButton]}
+                onPress={handleGoBack}
+                style={styles.backButton}
               >
-                <Feather name="trash-2" size={16} color="#fff" />
-                <Text style={styles.deleteButtonText}>Delete</Text>
+                <Feather name="arrow-left" size={24} color="#E0E0E0" />
+                <Text style={styles.backButtonText}>Back to Issues</Text>
               </TouchableOpacity>
+              <View style={styles.headerTitleContainer}>
+                <Text style={styles.title}>{issue.title}</Text>
+              </View>
+              <View style={styles.headerTitleContainer}>
+                <View style={styles.headerButtons}>
+                  <TouchableOpacity onPress={handleEdit} style={styles.button}>
+                    <Feather name="edit-2" size={16} color="#E0E0E0" />
+                    <Text style={styles.buttonText}>Edit</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={handleDelete}
+                    style={[styles.button, styles.deleteButton]}
+                  >
+                    <Feather name="trash-2" size={16} color="#fff" />
+                    <Text style={styles.deleteButtonText}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
-          </View>
-        </View>
 
-        {/* 主要内容卡片 */}
-        <View style={styles.card}>
-          <View style={styles.tagContainer}>
-            {renderTag(issue.status, statusColors[issue.status])}
-            {renderTag(issue.priority, priorityColors[issue.priority])}
-            <Text style={styles.updatedText}>Updated {issue.created}</Text>
-          </View>
-          <Text style={styles.mainContentText}>{issue.description}</Text>
-        </View>
+            <View style={styles.card}>
+              <View style={styles.tagContainer}>
+                {renderTag(issue.status, statusColors[issue.status])}
+                {renderTag(issue.priority, priorityColors[issue.priority])}
+                <Text style={styles.updatedText}>Updated {issue.created}</Text>
+              </View>
+              <Text style={styles.mainContentText}>{issue.description}</Text>
+            </View>
 
-        {/* 详细信息卡片 */}
-        <View style={styles.card}>
-          <Text style={styles.detailsTitle}>Details</Text>
-          {/* ✅ 详细信息行新布局 */}
-          <View style={styles.detailsRow}>
-            <Text style={styles.detailsLabel}>Assigned to</Text>
-            <Text style={styles.detailsValue}>{'N/A'}</Text>
-          </View>
-          <View style={styles.detailsRow}>
-            <Text style={styles.detailsLabel}>Status</Text>
-            <View style={styles.detailsValue2}>
-              {renderTag(issue.status, statusColors[issue.status])}
+            <View style={styles.card}>
+              <Text style={styles.detailsTitle}>Details</Text>
+              <View style={styles.detailsRow}>
+                <Text style={styles.detailsLabel}>Assigned to</Text>
+                <Text style={styles.detailsValue}>{'N/A'}</Text>
+              </View>
+              <View style={styles.detailsRow}>
+                <Text style={styles.detailsLabel}>Status</Text>
+                <View style={styles.detailsValue2}>
+                  {renderTag(issue.status, statusColors[issue.status])}
+                </View>
+              </View>
+              <View style={styles.detailsRow}>
+                <Text style={styles.detailsLabel}>Priority</Text>
+                <View style={styles.detailsValue2}>
+                  {renderTag(issue.priority, priorityColors[issue.priority])}
+                </View>
+              </View>
+              <View style={styles.detailsRow}>
+                <Text style={styles.detailsLabel}>Created</Text>
+                <Text style={styles.detailsValue}>{issue.created}</Text>
+              </View>
             </View>
-          </View>
-          <View style={styles.detailsRow}>
-            <Text style={styles.detailsLabel}>Priority</Text>
-            <View style={styles.detailsValue2}>
-              {renderTag(issue.priority, priorityColors[issue.priority])}
-            </View>
-          </View>
-          <View style={styles.detailsRow}>
-            <Text style={styles.detailsLabel}>Created</Text>
-            <Text style={styles.detailsValue}>{issue.created}</Text>
-          </View>
-        </View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -273,6 +316,17 @@ const styles = StyleSheet.create({
     color: '#E0E0E0',
     fontSize: 14,
     width: '30%',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyText: {
+    color: '#fff',
+    fontSize: 18,
+    marginBottom: 20,
   },
 });
 

@@ -10,10 +10,12 @@ import {
   StatusBar,
   Modal, // 导入 Modal
   FlatList, // 导入 FlatList
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
+import { updateIssue } from '../services/IssueApi';
 
 // 选项数据
 const statusOptions = ['In Progress', 'Done', 'Low', 'Medium', 'High'];
@@ -39,8 +41,33 @@ const EditIssueScreen: React.FC = () => {
     navigation.goBack();
   };
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
+    // 实现创建新 Issue 的逻辑
     console.log('更新 Issue:', { title, description, status, priority });
+    // 调用 API Service 来发送创建请求
+    if (!title || !description) {
+      Alert.alert('提示', '标题和描述不能为空');
+      return;
+    }
+
+    const updatedIssueData = {
+      id: Number(issue.id),
+      title,
+      description,
+      status: 'in_progress',
+      priority: priority.toLowerCase(),
+    };
+
+    try {
+      // ✅ 捕获潜在的异常
+      await updateIssue(issue.id, updatedIssueData);
+      console.log('Issue 创建成功！');
+      navigation.goBack(); // 只有在请求成功时才会返回
+    } catch (error) {
+      // ✅ 在请求失败时执行
+      console.error('Issue 创建失败:', error);
+      Alert.alert('错误', '创建任务失败，请稍后重试。');
+    }
   };
 
   const handleCancel = () => {

@@ -27,9 +27,10 @@ interface IssueUIData {
   priority: 'Low' | 'Medium' | 'High';
   created: string;
 }
+
 // 定义用于创建新 Issue 的数据结构
 interface NewIssueData {
-  id: string;
+  id: number;
   title: string;
   description: string;
   status: string;
@@ -88,6 +89,23 @@ export const fetchIssues = async (): Promise<IssueUIData[]> => {
   }
 };
 
+export const fetchIssueById = async (id: number): Promise<IssueUIData> => {
+  try {
+    const response = await api.get(`/issues/${id}`);
+    // 假设 API 返回单个对象，直接映射
+    return mapApiDataToUI(response.data);
+  } catch (error) {
+    // ✅ 统一的 Axios 错误处理
+    if (axios.isAxiosError(error) && error.response) {
+      const serverErrorMessage = error.response.data?.message || 'Server error';
+      console.error('获取 Issue 失败:', serverErrorMessage);
+      throw new Error(serverErrorMessage);
+    }
+    console.error('获取 Issue 失败:', error);
+    throw error;
+  }
+};
+
 /**
  * 创建一个新的 Issue。
  * @param issueData 包含新 Issue 数据的对象。
@@ -105,6 +123,27 @@ export const createIssue = async (issueData: NewIssueData) => {
       throw new Error(serverErrorMessage);
     }
     console.error('新建 Issue 失败:', error);
+    throw new Error('An unexpected error occurred.');
+  }
+};
+
+/**
+ * 编辑一个 Issue。
+ * @param issueData 包含新 Issue 数据的对象。
+ * @returns Promise<any> 返回服务器的响应数据。
+ */
+export const updateIssue = async (issueId: string, issueData: NewIssueData) => {
+  try {
+    const response = await api.put(`/issues/${issueId}`, issueData);
+    return response.data;
+  } catch (error) {
+    // ✅ 统一的 Axios 错误处理
+    if (axios.isAxiosError(error) && error.response) {
+      const serverErrorMessage = error.response.data?.message || 'Server error';
+      console.error('编辑 Issue 失败:', serverErrorMessage);
+      throw new Error(serverErrorMessage);
+    }
+    console.error('编辑 Issue 失败:', error);
     throw new Error('An unexpected error occurred.');
   }
 };

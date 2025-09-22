@@ -86,7 +86,7 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
   const renderItem = ({ item }: { item: Issue }) => (
     <TouchableOpacity
       style={styles.issueRow}
-      onPress={() => navigation.navigate('IssueDetail', { issue: item })}
+      onPress={() => navigation.navigate('IssueDetail', { issueId: item.id })}
     >
       <Text style={[styles.issueCell, styles.titleCell]} numberOfLines={1}>
         {item.title}
