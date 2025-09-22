@@ -8,9 +8,10 @@ import { NavigationContainer } from '@react-navigation/native';
 // 从 @react-navigation/native-stack 导入 createNativeStackNavigator
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-// 导入你的两个页面组件
 import LoginScreen from './screens/LoginScreen';
 import IssueListScreen from './screens/IssuesScreen';
+import IssueDetailScreen from './screens/IssueDetailScreen';
+import EditIssueScreen from './screens/EditIssueScreen';
 
 // 创建一个导航器对象
 const Stack = createNativeStackNavigator();
@@ -34,6 +35,16 @@ function App() {
           name="Issues"
           component={IssueListScreen}
           options={{ headerShown: false }} // 隐藏 Issues 页面的导航栏
+        />
+        <Stack.Screen
+          name="IssueDetail"
+          component={IssueDetailScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="EditIssue"
+          component={EditIssueScreen}
+          options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>

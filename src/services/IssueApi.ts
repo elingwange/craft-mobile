@@ -21,6 +21,7 @@ interface IssueApiData {
 interface IssueUIData {
   id: string;
   title: string;
+  description: string;
   status: 'In Progress' | 'Done' | 'Low' | 'Medium' | 'High';
   priority: 'Low' | 'Medium' | 'High';
   created: string;
@@ -44,6 +45,7 @@ const mapApiDataToUI = (issue: IssueApiData): IssueUIData => {
   return {
     id: issue.id.toString(),
     title: issue.title,
+    description: issue.description,
     status: statusMap[issue.status],
     priority: priorityMap[issue.priority],
     created: new Date(issue.createdAt).toLocaleDateString('en-US', {
@@ -61,7 +63,7 @@ export const fetchIssues = async (): Promise<IssueUIData[]> => {
         'Content-Type': 'application/json',
       },
     });
-    console.log('Login successful, received data:', response.data);
+    console.log('fetchIssues successful, received data:', response.data);
 
     return response.data.map(mapApiDataToUI);
   } catch (error) {
