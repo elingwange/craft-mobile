@@ -79,8 +79,10 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
   );
 
   const handleNewIssuePress = () => {
-    // ✅ 新增的函数：导航到 AddIssue 页面
     navigation.navigate('AddIssue');
+  };
+  const handleDashboardPress = () => {
+    navigation.navigate('Dashboard');
   };
 
   const renderItem = ({ item }: { item: Issue }) => (
@@ -113,16 +115,24 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
       <View style={styles.container}>
-        {/* ... (顶部导航保持不变) */}
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
             <Icon name="chevron-back" size={24} color="#FFF" />
-            <Text style={styles.headerTitle}>Back to Dashboard</Text>
+            <Text style={styles.headerTitle}>Back</Text>
           </TouchableOpacity>
           <Text style={styles.screenTitle}>Issues</Text>
+        </View>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.newIssueButton}
+            onPress={handleDashboardPress}
+          >
+            <Icon name="add" size={20} color="#FFF" />
+            <Text style={styles.newIssueButtonText}>Dashboard</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.newIssueButton}
             onPress={handleNewIssuePress}
@@ -195,6 +205,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
+    width: 140,
+    marginBottom: 12,
   },
   newIssueButtonText: {
     color: '#FFF',

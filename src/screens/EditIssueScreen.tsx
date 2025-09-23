@@ -18,7 +18,7 @@ import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { updateIssue } from '../services/IssueApi';
 
 // 选项数据
-const statusOptions = ['In Progress', 'Done', 'Low', 'Medium', 'High'];
+const statusOptions = ['backlog', 'todo', 'in_progress', 'done'];
 
 const priorityOptions = ['High', 'Medium', 'Low'];
 
@@ -54,7 +54,7 @@ const EditIssueScreen: React.FC = () => {
       id: Number(issue.id),
       title,
       description,
-      status: 'in_progress',
+      status: status.toLowerCase(),
       priority: priority.toLowerCase(),
     };
 

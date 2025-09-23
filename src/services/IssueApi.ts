@@ -168,3 +168,19 @@ export const deleteIssue = async (issueId: string): Promise<void> => {
     throw new Error('An unexpected error occurred.');
   }
 };
+
+export const fetchDashboardData = async () => {
+  try {
+    const response = await api.get('/issues/dashboard');
+    // 在这里对数据进行处理和格式化，以匹配前端的 DashboardData 接口
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      const serverErrorMessage = error.response.data?.message || 'Server error';
+      console.error('fetchDashboardData 失败:', serverErrorMessage);
+      throw new Error(serverErrorMessage);
+    }
+    console.error('fetchDashboardData:', error);
+    throw new Error('An unexpected error occurred.');
+  }
+};

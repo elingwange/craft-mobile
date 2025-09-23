@@ -17,15 +17,6 @@ import { deleteIssue } from '../services/IssueApi';
 import { fetchIssueById } from '../services/IssueApi';
 import { useFocusEffect } from '@react-navigation/native';
 
-// 定义从导航参数中接收的数据类型
-interface IssueDetailData {
-  id: string;
-  title: string;
-  description: string;
-  status: 'In Progress' | 'Done' | 'Low' | 'Medium' | 'High';
-  priority: 'Low' | 'Medium' | 'High';
-  created: string;
-}
 type RootStackParamList = {
   Issues: undefined;
   // ✅ 修改类型，现在它接收一个名为 'issueId' 的 number 类型参数
@@ -33,8 +24,6 @@ type RootStackParamList = {
     issueId: number;
   };
 };
-
-type IssueDetailScreenRouteProp = RouteProp<RootStackParamList, 'IssueDetail'>;
 
 interface IssueDetailScreenProps {}
 
