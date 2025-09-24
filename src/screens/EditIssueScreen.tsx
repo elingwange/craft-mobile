@@ -160,7 +160,7 @@ const EditIssueScreen: React.FC = () => {
         </View>
       </ScrollView>
 
-      {/* ✅ Status 模态框 */}
+      {/* tatus 模态框 */}
       <Modal
         visible={isStatusModalVisible}
         animationType="fade"
@@ -190,7 +190,7 @@ const EditIssueScreen: React.FC = () => {
         </View>
       </Modal>
 
-      {/* ✅ Priority 模态框 */}
+      {/* Priority 模态框 */}
       <Modal
         visible={isPriorityModalVisible}
         animationType="fade"
