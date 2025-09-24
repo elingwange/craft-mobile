@@ -51,10 +51,8 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
 
     if (token) {
       await AsyncStorage.setItem('userToken', token);
-      console.log('Token saved successfully!');
-      navigation.navigate('Issues');
+      navigation.replace('Issues');
     } else {
-      // Login failed, the login function already showed an alert
       console.log('Login failed');
     }
   };

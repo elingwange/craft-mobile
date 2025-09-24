@@ -17,8 +17,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import {
   fetchIssues,
   IssueUIData,
-  getStatusColor, // 导入正确的辅助函数
-  getPriorityColor, // 导入正确的辅助函数
+  getStatusColor,
+  getPriorityColor,
 } from '../services/IssueApi';
 
 // 定义导航相关的类型 (保持不变)
@@ -96,28 +96,12 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
       <Text style={[styles.headerText, styles.createdCell]}>Created</Text>
     </View>
   );
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Icon name="chevron-back" size={24} color="#FFF" />
-            <Text style={styles.headerTitle}>Back</Text>
-          </TouchableOpacity>
-          <Text style={styles.screenTitle}>Issues</Text>
-        </View>
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.newIssueButton}
-            onPress={handleDashboardPress}
-          >
-            <Icon name="bar-chart" size={20} color="#FFF" />
-            <Text style={styles.newIssueButtonText}>Dashboard</Text>
-          </TouchableOpacity>
           <TouchableOpacity
             style={styles.newIssueButton}
             onPress={handleNewIssuePress}
@@ -149,16 +133,15 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#121212',
   },
   container: {
     flex: 1,
-    backgroundColor: '#121212',
     paddingHorizontal: 16,
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     paddingTop: 10,
     marginBottom: 10,
