@@ -1,4 +1,3 @@
-// EditIssueScreen.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -8,19 +7,21 @@ import {
   TextInput,
   ScrollView,
   StatusBar,
-  Modal, // 导入 Modal
-  FlatList, // 导入 FlatList
+  Modal,
+  FlatList,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
-import { updateIssue } from '../services/IssueApi';
-
-// 选项数据
-const statusOptions = ['backlog', 'todo', 'in_progress', 'done'];
-
-const priorityOptions = ['High', 'Medium', 'Low'];
+import {
+  updateIssue,
+  statusOptionsUI,
+  priorityOptionsUI,
+  // 导入新的辅助函数
+  getStatusApiValue,
+  getPriorityApiValue,
+} from '../services/IssueApi';
 
 const EditIssueScreen: React.FC = () => {
   const route =
@@ -42,31 +43,28 @@ const EditIssueScreen: React.FC = () => {
   };
 
   const handleUpdate = async () => {
-    // 实现创建新 Issue 的逻辑
     console.log('更新 Issue:', { title, description, status, priority });
-    // 调用 API Service 来发送创建请求
     if (!title || !description) {
       Alert.alert('提示', '标题和描述不能为空');
       return;
     }
 
+    // 使用新的辅助函数将 UI 值转换为正确的 API 值
     const updatedIssueData = {
       id: Number(issue.id),
       title,
       description,
-      status: status.toLowerCase(),
-      priority: priority.toLowerCase(),
+      status: getStatusApiValue(status), // 修复：使用辅助函数进行转换
+      priority: getPriorityApiValue(priority), // 修复：使用辅助函数进行转换
     };
 
     try {
-      // ✅ 捕获潜在的异常
       await updateIssue(issue.id, updatedIssueData);
-      console.log('Issue 创建成功！');
-      navigation.goBack(); // 只有在请求成功时才会返回
+      console.log('Issue 更新成功！');
+      navigation.goBack();
     } catch (error) {
-      // ✅ 在请求失败时执行
-      console.error('Issue 创建失败:', error);
-      Alert.alert('错误', '创建任务失败，请稍后重试。');
+      console.error('Issue 更新失败:', error);
+      Alert.alert('错误', '更新任务失败，请稍后重试。');
     }
   };
 
@@ -173,7 +171,7 @@ const EditIssueScreen: React.FC = () => {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Select Status</Text>
             <FlatList
-              data={statusOptions}
+              data={statusOptionsUI}
               keyExtractor={item => item}
               renderItem={({ item }) =>
                 renderOptionItem(item, value => {
@@ -203,7 +201,7 @@ const EditIssueScreen: React.FC = () => {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Select Priority</Text>
             <FlatList
-              data={priorityOptions}
+              data={priorityOptionsUI}
               keyExtractor={item => item}
               renderItem={({ item }) =>
                 renderOptionItem(item, value => {

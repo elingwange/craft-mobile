@@ -15,21 +15,20 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
-import { createIssue } from '../services/IssueApi';
-
-// 选项数据
-const statusOptions = ['In Progress', 'open', 'Done'];
-
-const priorityOptions = ['high', 'Medium', 'Low'];
+import {
+  createIssue,
+  statusOptionsUI,
+  priorityOptionsUI,
+} from '../services/IssueApi';
 
 const AddIssueScreen: React.FC = () => {
   const navigation = useNavigation();
 
   // ✅ 为新 Issue 设置默认初始状态
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [status, setStatus] = useState('In Progress');
-  const [priority, setPriority] = useState('Medium');
+  const [description, setDescription] = useState();
+  const [status, setStatus] = useState(statusOptionsUI[0]);
+  const [priority, setPriority] = useState(priorityOptionsUI[0]);
 
   // 管理模态框状态
   const [isStatusModalVisible, setStatusModalVisible] = useState(false);
@@ -173,7 +172,7 @@ const AddIssueScreen: React.FC = () => {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Select Status</Text>
             <FlatList
-              data={statusOptions}
+              data={statusOptionsUI}
               keyExtractor={item => item}
               renderItem={({ item }) =>
                 renderOptionItem(item, value => {
@@ -202,7 +201,7 @@ const AddIssueScreen: React.FC = () => {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Select Priority</Text>
             <FlatList
-              data={priorityOptions}
+              data={priorityOptionsUI}
               keyExtractor={item => item}
               renderItem={({ item }) =>
                 renderOptionItem(item, value => {

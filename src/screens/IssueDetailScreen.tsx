@@ -1,4 +1,3 @@
-// IssueDetailScreen.tsx
 import React, { useState, useCallback } from 'react';
 import {
   View,
@@ -14,12 +13,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { deleteIssue } from '../services/IssueApi';
-import { fetchIssueById } from '../services/IssueApi';
+import {
+  fetchIssueById,
+  getStatusColor, // 导入正确的颜色辅助函数
+  getPriorityColor, // 导入正确的颜色辅助函数
+} from '../services/IssueApi';
 import { useFocusEffect } from '@react-navigation/native';
 
 type RootStackParamList = {
   Issues: undefined;
-  // ✅ 修改类型，现在它接收一个名为 'issueId' 的 number 类型参数
   IssueDetail: {
     issueId: number;
   };
@@ -31,7 +33,6 @@ const IssueDetailScreen: React.FC<IssueDetailScreenProps> = () => {
   const route = useRoute<RouteProp<RootStackParamList, 'IssueDetail'>>();
   const navigation = useNavigation();
 
-  // ✅ 现在可以直接解构出 issueId
   const { issueId } = route.params;
 
   const [issue, setIssue] = useState(null);
@@ -92,19 +93,6 @@ const IssueDetailScreen: React.FC<IssueDetailScreenProps> = () => {
     ]);
   };
 
-  const statusColors = {
-    'In Progress': '#9B59B6', // 假设Todo是这个颜色
-    Done: '#5CB85C',
-    Low: '#3498DB',
-    Medium: '#9B59B6', // 假设Medium是这个颜色
-    High: '#D9534F',
-  };
-  const priorityColors = {
-    Low: '#3498DB',
-    Medium: '#9B59B6',
-    High: '#D9534F',
-  };
-
   const renderTag = (label: string, color: string) => (
     <View style={[styles.tag, { backgroundColor: color }]}>
       <Text style={styles.tagText}>{label}</Text>
@@ -160,8 +148,10 @@ const IssueDetailScreen: React.FC<IssueDetailScreenProps> = () => {
 
             <View style={styles.card}>
               <View style={styles.tagContainer}>
-                {renderTag(issue.status, statusColors[issue.status])}
-                {renderTag(issue.priority, priorityColors[issue.priority])}
+                {/* 修复：使用辅助函数获取颜色 */}
+                {renderTag(issue.status, getStatusColor(issue.status))}
+                {/* 修复：使用辅助函数获取颜色 */}
+                {renderTag(issue.priority, getPriorityColor(issue.priority))}
                 <Text style={styles.updatedText}>Updated {issue.created}</Text>
               </View>
               <Text style={styles.mainContentText}>{issue.description}</Text>
@@ -176,13 +166,15 @@ const IssueDetailScreen: React.FC<IssueDetailScreenProps> = () => {
               <View style={styles.detailsRow}>
                 <Text style={styles.detailsLabel}>Status</Text>
                 <View style={styles.detailsValue2}>
-                  {renderTag(issue.status, statusColors[issue.status])}
+                  {/* 修复：使用辅助函数获取颜色 */}
+                  {renderTag(issue.status, getStatusColor(issue.status))}
                 </View>
               </View>
               <View style={styles.detailsRow}>
                 <Text style={styles.detailsLabel}>Priority</Text>
                 <View style={styles.detailsValue2}>
-                  {renderTag(issue.priority, priorityColors[issue.priority])}
+                  {/* 修复：使用辅助函数获取颜色 */}
+                  {renderTag(issue.priority, getPriorityColor(issue.priority))}
                 </View>
               </View>
               <View style={styles.detailsRow}>

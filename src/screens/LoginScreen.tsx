@@ -37,8 +37,8 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
       return;
     }
     // ✅ 正确做法：直接使用新的值
-    const newUserName = 'abc';
-    const newEmail = 'abc@gmail.com';
+    const newUserName = 'Rain';
+    const newEmail = 'rain@gmail.com';
     const newPassword = 'Abc123@';
 
     // 可选：如果 UI 绑定了这些值，你仍然可以更新状态

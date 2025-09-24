@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -11,11 +11,15 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 
-// 导入你的 API 服务文件，假设它叫 issuesApi.js
-// 请确保你已经创建了这个文件并包含了我们之前讨论的 fetchIssues 函数
-import { fetchIssues } from '../services/IssueApi';
+// 导入统一的 API 服务和类型定义
+import {
+  fetchIssues,
+  IssueUIData,
+  getStatusColor, // 导入正确的辅助函数
+  getPriorityColor, // 导入正确的辅助函数
+} from '../services/IssueApi';
 
 // 定义导航相关的类型 (保持不变)
 type RootStackParamList = {
@@ -23,27 +27,6 @@ type RootStackParamList = {
   Issues: undefined;
 };
 type IssuesScreenProps = NativeStackScreenProps<RootStackParamList, 'Issues'>;
-
-// 定义每一个 issue 的数据类型 (保持不变)
-type Issue = {
-  id: string;
-  title: string;
-  status: 'Done' | 'Backlog' | 'In Progress';
-  priority: 'High' | 'Medium' | 'Low';
-  created: string;
-};
-
-// 定义徽章的颜色 (保持不变)
-const priorityColors = {
-  High: '#D9534F',
-  Medium: '#9B59B6',
-  Low: '#3498DB',
-};
-const statusColors = {
-  Done: '#5CB85C',
-  Backlog: '#777',
-  'In Progress': '#F0AD4E',
-};
 
 // 徽章组件 (保持不变)
 const Badge = ({ text, color }: { text: string; color: string }) => (
@@ -53,14 +36,13 @@ const Badge = ({ text, color }: { text: string; color: string }) => (
 );
 
 const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
-  const [issues, setIssues] = useState<Issue[]>([]);
+  const [issues, setIssues] = useState<IssueUIData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   useFocusEffect(
     useCallback(() => {
       const getIssues = async () => {
         setIsLoading(true);
         try {
-          // ✅ 在这里调用 API，并用返回的数据更新状态
           const fetchedIssues = await fetchIssues();
           setIssues(fetchedIssues);
         } catch (error) {
@@ -85,7 +67,8 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
     navigation.navigate('Dashboard');
   };
 
-  const renderItem = ({ item }: { item: Issue }) => (
+  // 现在 item.status 和 item.priority 直接是 UI 层类型，无需额外的映射
+  const renderItem = ({ item }: { item: IssueUIData }) => (
     <TouchableOpacity
       style={styles.issueRow}
       onPress={() => navigation.navigate('IssueDetail', { issueId: item.id })}
@@ -94,10 +77,12 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
         {item.title}
       </Text>
       <View style={[styles.issueCell, styles.statusCell]}>
-        <Badge text={item.status} color={statusColors[item.status]} />
+        {/* 正确调用：使用 getStatusColor 函数获取颜色 */}
+        <Badge text={item.status} color={getStatusColor(item.status)} />
       </View>
       <View style={[styles.issueCell, styles.priorityCell]}>
-        <Badge text={item.priority} color={priorityColors[item.priority]} />
+        {/* 正确调用：使用 getPriorityColor 函数获取颜色 */}
+        <Badge text={item.priority} color={getPriorityColor(item.priority)} />
       </View>
       <Text style={[styles.issueCell, styles.createdCell]}>{item.created}</Text>
     </TouchableOpacity>
@@ -130,7 +115,7 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
             style={styles.newIssueButton}
             onPress={handleDashboardPress}
           >
-            <Icon name="add" size={20} color="#FFF" />
+            <Icon name="bar-chart" size={20} color="#FFF" />
             <Text style={styles.newIssueButtonText}>Dashboard</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -156,11 +141,11 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
           )}
         </View>
       </View>
+      <View style={{ height: 20 }} />
     </SafeAreaView>
   );
 };
 
-// 样式表 (保持不变)
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -176,7 +161,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: 10,
-    paddingBottom: 20,
+    marginBottom: 10,
   },
   backButton: {
     flexDirection: 'row',
@@ -205,7 +190,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
-    width: 140,
+    width: 135,
     marginBottom: 12,
   },
   newIssueButtonText: {
@@ -220,6 +205,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     padding: 8,
+    marginBottom: 20,
   },
   listHeader: {
     flexDirection: 'row',
