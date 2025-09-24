@@ -1,70 +1,54 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Icon from 'react-native-vector-icons/Ionicons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import IssuesScreen from '../screens/IssuesScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import IssueDetailScreen from '../screens/IssueDetailScreen';
+import NewIssueScreen from '../screens/NewIssueScreen';
 import EditIssueScreen from '../screens/EditIssueScreen';
-import AddIssueScreen from '../screens/NewIssueScreen';
 
 const Tab = createBottomTabNavigator();
 const IssuesStack = createNativeStackNavigator();
 
-// 为“任务”标签页创建一个独立的堆栈导航器，以支持详情页等
+// 为 Issue 相关的页面创建一个独立的堆栈导航器
 const IssuesStackScreen = () => (
   <IssuesStack.Navigator screenOptions={{ headerShown: false }}>
-    <IssuesStack.Screen name="IssuesList" component={IssuesScreen} />
+    <IssuesStack.Screen name="Issues" component={IssuesScreen} />
     <IssuesStack.Screen name="IssueDetail" component={IssueDetailScreen} />
+    <IssuesStack.Screen name="AddIssue" component={NewIssueScreen} />
     <IssuesStack.Screen name="EditIssue" component={EditIssueScreen} />
-    <IssuesStack.Screen name="AddIssue" component={AddIssueScreen} />
   </IssuesStack.Navigator>
 );
 
-const AppNavigator: React.FC = () => {
+const AppNavigator = () => {
   return (
     <Tab.Navigator
-      screenOptions={{
+      screenOptions={({ route }) => ({
         headerShown: false,
+        tabBarActiveTintColor: '#FFD700',
+        tabBarInactiveTintColor: 'gray',
         tabBarStyle: {
           backgroundColor: '#1E1E1E',
-          borderTopColor: '#282828',
+          borderTopColor: 'transparent',
         },
-        tabBarActiveTintColor: '#F0AD4E',
-        tabBarInactiveTintColor: '#A0A0A0',
-      }}
+        tabBarIcon: ({ color, size }) => {
+          let iconName;
+          if (route.name === 'Issues') {
+            iconName = 'checkmark-circle-outline';
+          } else if (route.name === 'Dashboard') {
+            iconName = 'stats-chart-outline';
+          } else if (route.name === 'Profile') {
+            iconName = 'person-circle-outline';
+          }
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+      })}
     >
-      <Tab.Screen
-        name="Issues"
-        component={IssuesStackScreen}
-        options={{
-          title: 'Issues',
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="list-outline" color={color} size={size} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Dashboard"
-        component={DashboardScreen}
-        options={{
-          title: 'Dashboard',
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="pie-chart-outline" color={color} size={size} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="person-circle-outline" color={color} size={size} />
-          ),
-        }}
-      />
+      <Tab.Screen name="Issues" component={IssuesStackScreen} />
+      <Tab.Screen name="Dashboard" component={DashboardScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
 };

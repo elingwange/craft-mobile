@@ -184,9 +184,9 @@ const styles = StyleSheet.create({
   title: {
     paddingLeft: 16,
     paddingVertical: 10,
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#E0E0E0',
   },
   statsCard: {
     backgroundColor: '#1e1e1e',

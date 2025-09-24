@@ -11,22 +11,20 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
-import { login } from '../services/AuthApi'; // Import the new login function
-// 从 @react-navigation/native-stack 导入 NativeStackScreenProps
+import { login } from '../services/AuthApi';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // 定义你的导航器中所有页面的类型
 type RootStackParamList = {
   Login: undefined;
   Issues: undefined;
+  MainApp: undefined; // 添加 MainApp 路由
 };
 
 // 确保 LoginScreenProps 包含 navigation 和 route
 type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
-  const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
@@ -36,22 +34,16 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
       Alert.alert('提示', '请阅读并同意隐私政策');
       return;
     }
-    // ✅ 正确做法：直接使用新的值
-    const newUserName = 'Rain';
-    const newEmail = 'rain@gmail.com';
-    const newPassword = 'Abc123@';
 
-    // 可选：如果 UI 绑定了这些值，你仍然可以更新状态
-    setUserName(newUserName);
-    setEmail(newEmail);
-    setPassword(newPassword);
+    if (!email || !password) {
+      Alert.alert('错误', '邮箱和密码不能为空。');
+      return;
+    }
 
-    // Call the login API with the new values
-    const token = await login(newUserName, newEmail, newPassword);
-
-    if (token) {
-      await AsyncStorage.setItem('userToken', token);
-      navigation.replace('Issues');
+    const userData = await login('Rain', email, password);
+    if (userData) {
+      // 跳转到 MainApp 路由，这是你的底部标签导航器
+      navigation.replace('MainApp');
     } else {
       console.log('Login failed');
     }
@@ -74,6 +66,7 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.headerLogoContainer}>
+        {/* 假设你有一个本地 logo 文件 */}
         <Image
           source={require('../../assets/images/app_logo2.png')}
           style={styles.logo}
