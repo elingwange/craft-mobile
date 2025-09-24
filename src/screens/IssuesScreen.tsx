@@ -181,7 +181,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     padding: 8,
-    marginBottom: 20,
+    marginTop: 10,
+    marginBottom: 30,
   },
   listHeader: {
     flexDirection: 'row',
@@ -242,7 +243,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     right: 30,
-    bottom: -30,
+    bottom: -40,
     backgroundColor: '#ffc371',
     borderRadius: 30,
     elevation: 8, // Android 阴影

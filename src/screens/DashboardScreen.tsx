@@ -118,7 +118,7 @@ const DashboardScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
-      <Text style={styles.title}>Issues Overview</Text>
+      <Text style={styles.title}>Overview</Text>
       <ScrollView style={styles.container}>
         {/* 统计卡片 */}
         <View style={styles.statsCard}>
