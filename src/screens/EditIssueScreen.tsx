@@ -90,7 +90,7 @@ const EditIssueScreen: React.FC = () => {
         <View style={styles.header}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
             <Feather name="arrow-left" size={24} color="#E0E0E0" />
-            <Text style={styles.backButtonText}>Back to Issue</Text>
+            <Text style={styles.backButtonText}>Back</Text>
           </TouchableOpacity>
         </View>
         <Text style={styles.screenTitle}>Edit Issue</Text>

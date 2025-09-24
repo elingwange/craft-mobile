@@ -101,16 +101,6 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
       <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.newIssueButton}
-            onPress={handleNewIssuePress}
-          >
-            <Icon name="add" size={20} color="#FFF" />
-            <Text style={styles.newIssueButtonText}>New Issue</Text>
-          </TouchableOpacity>
-        </View>
-
         <View style={styles.listContainer}>
           {isLoading ? (
             <ActivityIndicator size="large" color="#fff" style={{ flex: 1 }} />
@@ -124,6 +114,9 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
             />
           )}
         </View>
+        <TouchableOpacity style={styles.fab} onPress={handleNewIssuePress}>
+          <Icon name="add" size={30} color="#FFF" />
+        </TouchableOpacity>
       </View>
       <View style={{ height: 20 }} />
     </SafeAreaView>
@@ -240,6 +233,23 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 10,
     fontWeight: 'bold',
+  },
+  // ✅ 新增的 FAB 样式
+  fab: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+    right: 30,
+    bottom: -30,
+    backgroundColor: '#ffc371',
+    borderRadius: 30,
+    elevation: 8, // Android 阴影
+    shadowColor: '#000', // iOS 阴影
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
   },
 });
 

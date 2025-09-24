@@ -11,56 +11,46 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
-import { login } from '../services/AuthApi';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { signup } from '../services/AuthApi';
 
 // 定义你的导航器中所有页面的类型
 type RootStackParamList = {
   Login: undefined;
-  Issues: undefined;
-  MainApp: undefined; // 添加 MainApp 路由
-  Register: undefined; // 添加 Register 路由
+  Register: undefined;
+  MainApp: undefined; // 底部标签导航器
 };
 
-// 确保 LoginScreenProps 包含 navigation 和 route
-type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'> & {
-  onLogin: () => void;
-};
+type RegisterScreenProps = NativeStackScreenProps<
+  RootStackParamList,
+  'Register'
+>;
 
-const LoginScreen: FC<LoginScreenProps> = ({ navigation, onLogin }) => {
+const RegisterScreen: FC<RegisterScreenProps> = ({ navigation }) => {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   // 新增状态：控制密码可见性
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSignIn = async (): Promise<void> => {
+  const handleSignUp = async (): Promise<void> => {
     if (!agreeToTerms) {
       Alert.alert('提示', '请阅读并同意隐私政策');
       return;
     }
-
-    if (!email || !password) {
-      Alert.alert('错误', '邮箱和密码不能为空。');
+    if (!username || !email || !password) {
+      Alert.alert('错误', '所有字段都不能为空');
       return;
     }
 
-    const userData = await login('Rain', email, password);
+    const userData = await signup(username, email, password);
     if (userData) {
-      // 登录成功，调用 onLogin 来更新父组件状态
-      onLogin();
+      Alert.alert('成功', '注册成功！请登录');
+      navigation.replace('Login'); // 注册成功后返回登录界面
     } else {
-      console.log('Login failed');
+      Alert.alert('注册失败', '请检查注册信息并重试');
     }
-  };
-
-  const handleSignUp = (): void => {
-    navigation.navigate('Register');
-  };
-
-  const handleForgotPassword = (): void => {
-    Alert.alert('提示', '前往找回密码页面');
-    console.log('忘记密码');
   };
 
   const toggleAgreeToTerms = (): void => {
@@ -75,14 +65,27 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation, onLogin }) => {
   return (
     <View style={styles.container}>
       <View style={styles.headerLogoContainer}>
-        {/* 假设你有一个本地 logo 文件 */}
+        {/* 使用与登录界面相同的 logo 和样式 */}
         <Image
           source={require('../../assets/images/app_logo2.png')}
           style={styles.logo}
         />
         <Text style={styles.craftText}>Craft</Text>
       </View>
+      {/* 用户名输入框 */}
+      <View style={styles.inputContainer}>
+        <Icon name="user" size={20} color="#888" style={styles.inputIcon} />
+        <TextInput
+          style={styles.input}
+          placeholder="Username"
+          placeholderTextColor="#888"
+          autoCapitalize="none"
+          onChangeText={setUsername}
+          value={username}
+        />
+      </View>
 
+      {/* 邮箱输入框 */}
       <View style={styles.inputContainer}>
         <Icon name="mail" size={20} color="#888" style={styles.inputIcon} />
         <TextInput
@@ -96,6 +99,7 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation, onLogin }) => {
         />
       </View>
 
+      {/* 密码输入框 */}
       <View style={styles.inputContainer}>
         <Icon name="lock" size={20} color="#888" style={styles.inputIcon} />
         <TextInput
@@ -121,8 +125,9 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation, onLogin }) => {
         </TouchableOpacity>
       </View>
 
+      {/* 注册按钮 */}
       <TouchableOpacity
-        onPress={handleSignIn}
+        onPress={handleSignUp}
         style={styles.signInButtonWrapper}
       >
         <LinearGradient
@@ -131,24 +136,15 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation, onLogin }) => {
           end={{ x: 1, y: 0.5 }}
           style={styles.signInButton}
         >
-          <Text style={styles.signInButtonText}>Sign In</Text>
+          <Text style={styles.signInButtonText}>Sign Up</Text>
         </LinearGradient>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={handleForgotPassword}>
-        <Text style={styles.forgotPasswordText}>Forget Password?</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.orText}>or</Text>
-
-      <TouchableOpacity onPress={handleSignUp} style={styles.signUpButton}>
-        <Text style={styles.signUpButtonText}>Sign Up</Text>
-      </TouchableOpacity>
-
+      {/* 隐私政策复选框 */}
       <View style={styles.termsContainer}>
         <TouchableOpacity onPress={toggleAgreeToTerms} style={styles.checkbox}>
           {agreeToTerms ? (
-            <Icon name="check-square" size={18} color="#007bff" />
+            <Icon name="check-square" size={18} color="#b09971" />
           ) : (
             <Icon name="square" size={18} color="#888" />
           )}
@@ -158,6 +154,16 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation, onLogin }) => {
           <Text style={styles.privacyPolicyText}>Privacy Policy</Text>
         </Text>
       </View>
+
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={styles.signInLink}
+      >
+        <Text style={styles.signInLinkText}>
+          Already have an account?{' '}
+          <Text style={styles.signInLinkHighlight}>Sign In</Text>
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -169,7 +175,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#1c1c1c',
     paddingHorizontal: 30,
-    paddingTop: 30,
   },
   headerLogoContainer: {
     flexDirection: 'row',
@@ -188,11 +193,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-  logoPlaceholder: {
-    fontSize: 24,
+  screenTitle: {
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 50,
+    color: '#E0E0E0',
+    marginBottom: 30,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -233,32 +238,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  forgotPasswordText: {
-    color: '#007bff',
-    fontSize: 14,
-    marginBottom: 30,
-  },
-  orText: {
-    color: '#888',
-    fontSize: 16,
-    marginBottom: 20,
-  },
-  signUpButton: {
-    width: '100%',
-    height: 55,
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#b09971',
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  signUpButtonText: {
-    color: '#b09971',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
   termsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -273,9 +252,20 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   privacyPolicyText: {
-    color: '#007bff',
+    color: '#b09971',
+    fontWeight: 'bold',
+  },
+  signInLink: {
+    marginTop: 30,
+  },
+  signInLinkText: {
+    color: '#888',
+    fontSize: 14,
+  },
+  signInLinkHighlight: {
+    color: '#b09971',
     fontWeight: 'bold',
   },
 });
 
-export default LoginScreen;
+export default RegisterScreen;

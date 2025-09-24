@@ -16,8 +16,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
-  const [userName, setUserName] = useState(null);
-  const [email, setEmail] = useState(null);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useFocusEffect(
@@ -25,7 +25,6 @@ const ProfileScreen = () => {
       const loadProfile = async () => {
         setIsLoading(true);
         try {
-          // 从 AsyncStorage 获取用户信息
           const userDataString = await AsyncStorage.getItem('userData');
           if (userDataString) {
             const userData = JSON.parse(userDataString);
@@ -82,38 +81,53 @@ const ProfileScreen = () => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
       <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.screenTitle}>Profile</Text>
-        </View>
-
+        <Text style={styles.screenTitle}>Profile</Text>
         {isLoading ? (
           <ActivityIndicator size="large" color="#E0E0E0" />
         ) : userName ? (
-          <View style={styles.card}>
-            <View style={styles.profileItem}>
-              <Feather name="user" size={24} color="#A0A0A0" />
-              <View style={styles.profileTextContainer}>
-                <Text style={styles.label}>Username</Text>
-                <Text style={styles.value}>{userName}</Text>
+          <>
+            {/* 上半部分 - 用户信息 */}
+            <View style={styles.profileSection}>
+              <View style={styles.profileItem}>
+                <Feather name="user" size={24} color="#A0A0A0" />
+                <View style={styles.profileTextContainer}>
+                  <Text style={styles.label}>Username</Text>
+                  <Text style={styles.value}>{userName}</Text>
+                </View>
+              </View>
+              <View style={{ height: 20 }} />
+              <View style={styles.profileItem}>
+                <Feather name="mail" size={24} color="#A0A0A0" />
+                <View style={styles.profileTextContainer}>
+                  <Text style={styles.label}>Email</Text>
+                  <Text style={styles.value}>{email}</Text>
+                </View>
               </View>
             </View>
 
-            <View style={styles.profileItem}>
-              <Feather name="mail" size={24} color="#A0A0A0" />
-              <View style={styles.profileTextContainer}>
-                <Text style={styles.label}>Email</Text>
-                <Text style={styles.value}>{email}</Text>
-              </View>
-            </View>
+            {/* 下半部分 - 操作列表 */}
+            <View style={styles.actionsSection}>
+              <Text style={styles.actionsTitle}>Settings</Text>
 
-            <TouchableOpacity
-              style={styles.logoutButton}
-              onPress={handleLogout}
-            >
-              <Feather name="log-out" size={20} color="#fff" />
-              <Text style={styles.logoutButtonText}>Log Out</Text>
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity style={styles.actionButton}>
+                <Feather name="lock" size={24} color="#A0A0A0" />
+                <Text style={styles.actionText}>Reset Password</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.actionButton}>
+                <Feather name="moon" size={24} color="#A0A0A0" />
+                <Text style={styles.actionText}>Change Theme</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.actionButtonLogout}
+                onPress={handleLogout}
+              >
+                <Feather name="log-out" size={24} color="#A0A0A0" />
+                <Text style={styles.actionTextLogout}>Log Out</Text>
+              </TouchableOpacity>
+            </View>
+          </>
         ) : (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>无法加载用户信息。</Text>
@@ -139,24 +153,21 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  header: {
-    marginBottom: 20,
-  },
   screenTitle: {
     fontSize: 26,
     fontWeight: 'bold',
     color: '#E0E0E0',
+    marginBottom: 20,
   },
-  card: {
+  profileSection: {
     backgroundColor: '#1E1E1E',
     borderRadius: 12,
     padding: 20,
-    marginTop: 20,
+    marginBottom: 30,
   },
   profileItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#2b2b2b',
     paddingBottom: 20,
@@ -167,27 +178,46 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     color: '#A0A0A0',
-    marginBottom: 8,
   },
   value: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#E0E0E0',
+    marginTop: 4,
   },
-  logoutButton: {
+  actionsSection: {
+    backgroundColor: '#1E1E1E',
+    borderRadius: 12,
+    padding: 20,
+  },
+  actionsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#E0E0E0',
+    marginBottom: 15,
+  },
+  actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#D9534F',
-    borderRadius: 8,
-    paddingVertical: 12,
-    marginTop: 20,
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2b2b2b',
   },
-  logoutButtonText: {
-    marginLeft: 10,
-    color: '#fff',
-    fontWeight: 'bold',
+  actionButtonLogout: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 15,
+  },
+  actionText: {
+    marginLeft: 15,
     fontSize: 16,
+    color: '#E0E0E0',
+  },
+  actionTextLogout: {
+    marginLeft: 15,
+    fontSize: 16,
+    color: '#D9534F',
+    fontWeight: 'bold',
   },
   emptyContainer: {
     flex: 1,

@@ -112,7 +112,7 @@ const IssueDetailScreen: React.FC<IssueDetailScreenProps> = () => {
             <Text style={styles.emptyText}>任务详情不存在。</Text>
             <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
               <Feather name="arrow-left" size={24} color="#E0E0E0" />
-              <Text style={styles.backButtonText}>返回列表</Text>
+              <Text style={styles.backButtonText}>返回</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -124,7 +124,7 @@ const IssueDetailScreen: React.FC<IssueDetailScreenProps> = () => {
                 style={styles.backButton}
               >
                 <Feather name="arrow-left" size={24} color="#E0E0E0" />
-                <Text style={styles.backButtonText}>Back to Issues</Text>
+                <Text style={styles.backButtonText}>Back</Text>
               </TouchableOpacity>
               <View style={styles.headerTitleContainer}>
                 <Text style={styles.title}>{issue.title}</Text>

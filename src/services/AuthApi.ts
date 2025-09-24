@@ -33,16 +33,8 @@ export const login = async (
     const userData: UserData = { username, email: userEmail };
     console.log('Login successful, received data:', userData);
 
-    //   关键修复：将对象转换为 JSON 字符串再存储
+    // 关键修复：将对象转换为 JSON 字符串再存储
     await AsyncStorage.setItem('userData', JSON.stringify(userData));
-
-    await AsyncStorage.getItem('userData').then(value => {
-      if (value) {
-        console.log('Retrieved userData from AsyncStorage:', JSON.parse(value));
-      } else {
-        console.log('No userData found in AsyncStorage');
-      }
-    });
 
     return userData;
   } catch (error: any) {
@@ -91,6 +83,32 @@ export const logout = async (): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error('Logout failed:', error);
+    return false;
+  }
+};
+
+export const signup = async (
+  userName: string,
+  email: string,
+  password: string,
+): Promise<Boolean | null> => {
+  try {
+    // 直接使用参数创建请求体对象，避免混淆
+    const loginParams = { userName, email, password };
+    const params = JSON.stringify(loginParams);
+
+    // 推荐使用封装好的 API 服务，而不是直接使用 fetch
+    const response = await api.post('/users/register', params, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (response.status === 201) {
+      return true;
+    }
+    return false;
+  } catch (error: any) {
+    console.error('---- Login error:', error);
     return false;
   }
 };
