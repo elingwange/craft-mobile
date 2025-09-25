@@ -12,6 +12,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTheme } from '../contexts/ThemeContext'; // 引入 useTheme Hook
 
 // 导入统一的 API 服务和类型定义
 import {
@@ -36,6 +37,7 @@ const Badge = ({ text, color }: { text: string; color: string }) => (
 );
 
 const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
+  const { theme, isDarkMode } = useTheme(); // 使用 useTheme 钩子
   const [issues, setIssues] = useState<IssueUIData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   useFocusEffect(
@@ -70,10 +72,13 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
   // 现在 item.status 和 item.priority 直接是 UI 层类型，无需额外的映射
   const renderItem = ({ item }: { item: IssueUIData }) => (
     <TouchableOpacity
-      style={styles.issueRow}
+      style={[styles.issueRow, { borderBottomColor: theme.border }]}
       onPress={() => navigation.navigate('IssueDetail', { issueId: item.id })}
     >
-      <Text style={[styles.issueCell, styles.titleCell]} numberOfLines={1}>
+      <Text
+        style={[styles.issueCell, styles.titleCell, { color: theme.text }]}
+        numberOfLines={1}
+      >
         {item.title}
       </Text>
       <View style={[styles.issueCell, styles.statusCell]}>
@@ -84,26 +89,60 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
         {/* 正确调用：使用 getPriorityColor 函数获取颜色 */}
         <Badge text={item.priority} color={getPriorityColor(item.priority)} />
       </View>
-      <Text style={[styles.issueCell, styles.createdCell]}>{item.created}</Text>
+      <Text
+        style={[styles.issueCell, styles.createdCell, { color: theme.subText }]}
+      >
+        {item.created}
+      </Text>
     </TouchableOpacity>
   );
 
   const ListHeader = () => (
-    <View style={styles.listHeader}>
-      <Text style={[styles.headerText, styles.titleCell]}>Title</Text>
-      <Text style={[styles.headerText, styles.statusCell]}>Status</Text>
-      <Text style={[styles.headerText, styles.priorityCell]}>Priority</Text>
-      <Text style={[styles.headerText, styles.createdCell]}>Created</Text>
+    <View style={[styles.listHeader, { borderBottomColor: theme.border }]}>
+      <Text
+        style={[styles.headerText, styles.titleCell, { color: theme.subText }]}
+      >
+        Title
+      </Text>
+      <Text
+        style={[styles.headerText, styles.statusCell, { color: theme.subText }]}
+      >
+        Status
+      </Text>
+      <Text
+        style={[
+          styles.headerText,
+          styles.priorityCell,
+          { color: theme.subText },
+        ]}
+      >
+        Priority
+      </Text>
+      <Text
+        style={[
+          styles.headerText,
+          styles.createdCell,
+          { color: theme.subText },
+        ]}
+      >
+        Created
+      </Text>
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: theme.background }]}
+    >
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <View style={styles.container}>
-        <View style={styles.listContainer}>
+        <View style={[styles.listContainer, { backgroundColor: theme.card }]}>
           {isLoading ? (
-            <ActivityIndicator size="large" color="#fff" style={{ flex: 1 }} />
+            <ActivityIndicator
+              size="large"
+              color={theme.text}
+              style={{ flex: 1 }}
+            />
           ) : (
             <FlatList
               data={issues}
@@ -114,8 +153,11 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
             />
           )}
         </View>
-        <TouchableOpacity style={styles.fab} onPress={handleNewIssuePress}>
-          <Icon name="add" size={30} color="#FFF" />
+        <TouchableOpacity
+          style={[styles.fab, { backgroundColor: theme.primary }]}
+          onPress={handleNewIssuePress}
+        >
+          <Icon name="add" size={30} color={theme.buttonText} />
         </TouchableOpacity>
       </View>
       <View style={{ height: 20 }} />
@@ -126,7 +168,6 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#121212',
   },
   container: {
     flex: 1,
@@ -145,12 +186,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerTitle: {
-    color: '#FFF',
     fontSize: 16,
     marginLeft: 4,
   },
   screenTitle: {
-    color: '#FFF',
     fontSize: 32,
     fontWeight: 'bold',
     position: 'absolute',
@@ -162,7 +201,6 @@ const styles = StyleSheet.create({
   newIssueButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#333',
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
@@ -170,14 +208,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   newIssueButtonText: {
-    color: '#FFF',
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 6,
   },
   listContainer: {
     flex: 1,
-    backgroundColor: '#1E1E1E',
     borderRadius: 12,
     overflow: 'hidden',
     padding: 8,
@@ -189,10 +225,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
   },
   headerText: {
-    color: '#888',
     fontSize: 14,
     fontWeight: 'bold',
   },
@@ -202,10 +236,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#282828',
   },
   issueCell: {
-    color: '#E0E0E0',
     fontSize: 14,
   },
   titleCell: {
@@ -223,7 +255,6 @@ const styles = StyleSheet.create({
   createdCell: {
     flex: 1.7,
     textAlign: 'right',
-    color: '#999',
   },
   badge: {
     paddingVertical: 4,
@@ -244,7 +275,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     right: 30,
     bottom: -40,
-    backgroundColor: '#ffc371',
     borderRadius: 30,
     elevation: 8, // Android 阴影
     shadowColor: '#000', // iOS 阴影

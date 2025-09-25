@@ -4,8 +4,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Feather from 'react-native-vector-icons/Feather';
 import IssuesScreen from '../screens/IssuesScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import DashboardScreen from '../screens/DashboardScreen'; // 重新添加 DashboardScreen
+import DashboardScreen from '../screens/DashboardScreen';
 import ResetPasswordScreen from '../screens/ResetPasswordScreen';
+import { useTheme } from '../contexts/ThemeContext'; // 确保路径正确
 
 // 导入任务相关的新屏幕
 import NewIssueScreen from '../screens/NewIssueScreen';
@@ -34,6 +35,8 @@ const IssuesFlow = () => {
 
 // 定义主要的底部标签栏导航器
 const MainTabs = ({ onLogout }) => {
+  const { theme } = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -49,11 +52,12 @@ const MainTabs = ({ onLogout }) => {
           }
           return <Feather name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#b09971',
-        tabBarInactiveTintColor: '#888',
+        tabBarActiveTintColor: theme.primary, // 使用主题颜色
+        tabBarInactiveTintColor: theme.subText, // 使用主题颜色
         tabBarStyle: {
-          backgroundColor: '#1E1E1E',
-          borderTopWidth: 0,
+          backgroundColor: theme.card, // 使用主题颜色
+          borderTopWidth: 1,
+          borderTopColor: theme.border, // 使用主题颜色
         },
       })}
     >
@@ -74,21 +78,7 @@ const AppNavigator = ({ onLogout }) => {
       <AppStack.Screen name="MainTabs">
         {props => <MainTabs {...props} onLogout={onLogout} />}
       </AppStack.Screen>
-      <AppStack.Screen
-        name="ResetPassword"
-        component={ResetPasswordScreen}
-        options={{
-          headerShown: true,
-          headerStyle: {
-            backgroundColor: '#121212',
-          },
-          headerTintColor: '#E0E0E0',
-          headerTitle: '重置密码',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      />
+      <AppStack.Screen name="ResetPassword" component={ResetPasswordScreen} />
     </AppStack.Navigator>
   );
 };

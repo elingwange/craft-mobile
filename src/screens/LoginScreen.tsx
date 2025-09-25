@@ -13,8 +13,8 @@ import Icon from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
 import { login } from '../services/AuthApi';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { StackActions } from '@react-navigation/native';
 import { privacyPolicyContent } from '../const';
+import { useTheme } from '../contexts/ThemeContext';
 
 // 定义你的导航器中所有页面的类型
 type RootStackParamList = {
@@ -24,16 +24,17 @@ type RootStackParamList = {
   ResetPassword: undefined;
 };
 
+// 关键修正：LoginScreenProps 类型中，onLogin 是一个必需的函数
 type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'> & {
   onLogin: () => void;
 };
 
-const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
+const LoginScreen: FC<LoginScreenProps> = ({ navigation, onLogin }) => {
+  const { theme, isDarkMode } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  // 新增状态：控制隐私政策弹窗的可见性
   const [isPolicyModalVisible, setPolicyModalVisible] = useState(false);
 
   const handleSignIn = async (): Promise<void> => {
@@ -50,7 +51,9 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
     const userData = await login('Rain', email, password);
     if (userData) {
       console.log('Login successful');
-      navigation.dispatch(StackActions.replace('MainApp'));
+      // 关键修正：登录成功后，调用 onLogin prop
+      // 这会通知 RootNavigator 登录状态已改变
+      onLogin();
     } else {
       console.log('Login failed');
     }
@@ -72,7 +75,6 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
     setShowPassword(prevValue => !prevValue);
   };
 
-  // 新增函数：打开和关闭隐私政策弹窗
   const openPolicyModal = (): void => {
     setPolicyModalVisible(true);
   };
@@ -82,21 +84,34 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.headerLogoContainer}>
         <Image
           source={require('../../assets/images/app_logo2.png')}
           style={styles.logo}
         />
-        <Text style={styles.craftText}>Craft</Text>
+        <Text style={[styles.craftText, { color: theme.text }]}>Craft</Text>
       </View>
 
-      <View style={styles.inputContainer}>
-        <Icon name="mail" size={20} color="#888" style={styles.inputIcon} />
+      <View
+        style={[
+          styles.inputContainer,
+          {
+            backgroundColor: theme.inputBackground,
+            borderColor: isDarkMode ? theme.border : 'transparent',
+          },
+        ]}
+      >
+        <Icon
+          name="mail"
+          size={20}
+          color={theme.subText}
+          style={styles.inputIcon}
+        />
         <TextInput
-          style={styles.input}
+          style={[styles.input, { color: theme.text }]}
           placeholder="Email"
-          placeholderTextColor="#888"
+          placeholderTextColor={theme.subText}
           keyboardType="email-address"
           autoCapitalize="none"
           onChangeText={setEmail}
@@ -104,12 +119,25 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
         />
       </View>
 
-      <View style={styles.inputContainer}>
-        <Icon name="lock" size={20} color="#888" style={styles.inputIcon} />
+      <View
+        style={[
+          styles.inputContainer,
+          {
+            backgroundColor: theme.inputBackground,
+            borderColor: isDarkMode ? theme.border : 'transparent',
+          },
+        ]}
+      >
+        <Icon
+          name="lock"
+          size={20}
+          color={theme.subText}
+          style={styles.inputIcon}
+        />
         <TextInput
-          style={styles.input}
+          style={[styles.input, { color: theme.text }]}
           placeholder="Password"
-          placeholderTextColor="#888"
+          placeholderTextColor={theme.subText}
           secureTextEntry={!showPassword}
           autoCapitalize="none"
           onChangeText={setPassword}
@@ -122,7 +150,7 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
           <Icon
             name={showPassword ? 'eye' : 'eye-off'}
             size={20}
-            color="#888"
+            color={theme.subText}
           />
         </TouchableOpacity>
       </View>
@@ -142,44 +170,67 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
       </TouchableOpacity>
 
       <TouchableOpacity onPress={handleForgotPassword}>
-        <Text style={styles.forgotPasswordText}>Forget Password?</Text>
+        <Text style={[styles.forgotPasswordText, { color: theme.primary }]}>
+          Forget Password?
+        </Text>
       </TouchableOpacity>
 
-      <Text style={styles.orText}>or</Text>
+      <Text style={[styles.orText, { color: theme.subText }]}>or</Text>
 
-      <TouchableOpacity onPress={handleSignUp} style={styles.signUpButton}>
-        <Text style={styles.signUpButtonText}>Sign Up</Text>
+      <TouchableOpacity
+        onPress={handleSignUp}
+        style={[styles.signUpButton, { borderColor: theme.primary }]}
+      >
+        <Text style={[styles.signUpButtonText, { color: theme.primary }]}>
+          Sign Up
+        </Text>
       </TouchableOpacity>
 
       <View style={styles.termsContainer}>
         <TouchableOpacity onPress={toggleAgreeToTerms} style={styles.checkbox}>
           {agreeToTerms ? (
-            <Icon name="check-square" size={18} color="#b09971" />
+            <Icon name="check-square" size={18} color={theme.primary} />
           ) : (
-            <Icon name="square" size={18} color="#888" />
+            <Icon name="square" size={18} color={theme.subText} />
           )}
         </TouchableOpacity>
-        <Text style={styles.termsText}>
+        <Text style={[styles.termsText, { color: theme.subText }]}>
           You have read and agree to the{' '}
-          {/* 关键修复：点击隐私政策文本时打开弹窗 */}
-          <Text style={styles.privacyPolicyText} onPress={openPolicyModal}>
+          <Text
+            style={[styles.privacyPolicyText, { color: theme.primary }]}
+            onPress={openPolicyModal}
+          >
             Privacy Policy
           </Text>
         </Text>
       </View>
 
-      {/* 新增：隐私政策弹窗 */}
       {isPolicyModalVisible && (
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+        <View
+          style={[
+            styles.modalOverlay,
+            {
+              backgroundColor: isDarkMode
+                ? 'rgba(0, 0, 0, 0.8)'
+                : 'rgba(0, 0, 0, 0.5)',
+            },
+          ]}
+        >
+          <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
             <ScrollView contentContainerStyle={styles.policyScrollView}>
-              <Text style={styles.policyText}>{privacyPolicyContent}</Text>
+              <Text style={[styles.policyText, { color: theme.text }]}>
+                {privacyPolicyContent}
+              </Text>
             </ScrollView>
             <TouchableOpacity
               onPress={closePolicyModal}
-              style={styles.closeButton}
+              style={[styles.closeButton, { backgroundColor: theme.primary }]}
             >
-              <Text style={styles.closeButtonText}>Close</Text>
+              <Text
+                style={[styles.closeButtonText, { color: theme.buttonText }]}
+              >
+                Close
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -193,7 +244,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1c1c1c',
     paddingHorizontal: 30,
     paddingTop: 30,
   },
@@ -211,7 +261,6 @@ const styles = StyleSheet.create({
   },
   craftText: {
     fontSize: 38,
-    color: '#fff',
     fontWeight: 'bold',
   },
   logoPlaceholder: {
@@ -225,7 +274,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     height: 55,
-    backgroundColor: '#333',
+    borderWidth: 1,
     borderRadius: 10,
     marginBottom: 15,
     paddingHorizontal: 15,
@@ -236,7 +285,6 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: '100%',
-    color: '#fff',
     fontSize: 16,
   },
   passwordToggleIcon: {
@@ -260,12 +308,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   forgotPasswordText: {
-    color: '#b09971',
     fontSize: 14,
     marginBottom: 30,
   },
   orText: {
-    color: '#888',
     fontSize: 16,
     marginBottom: 20,
   },
@@ -274,14 +320,12 @@ const styles = StyleSheet.create({
     height: 55,
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: '#b09971',
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 40,
   },
   signUpButtonText: {
-    color: '#b09971',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -295,16 +339,13 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   termsText: {
-    color: '#888',
     fontSize: 13,
   },
   privacyPolicyText: {
-    color: '#b09971',
     fontWeight: 'bold',
   },
   modalOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
@@ -312,7 +353,6 @@ const styles = StyleSheet.create({
   modalContent: {
     width: '90%',
     height: '80%',
-    backgroundColor: '#1E1E1E',
     borderRadius: 12,
     padding: 20,
   },
@@ -321,19 +361,16 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   policyText: {
-    color: '#E0E0E0',
     fontSize: 14,
     lineHeight: 20,
   },
   closeButton: {
     marginTop: 20,
     padding: 12,
-    backgroundColor: '#b09971',
     borderRadius: 8,
     alignItems: 'center',
   },
   closeButtonText: {
-    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },

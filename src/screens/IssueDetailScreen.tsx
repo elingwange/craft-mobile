@@ -12,11 +12,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
+import { useTheme } from '../contexts/ThemeContext';
 import { deleteIssue } from '../services/IssueApi';
 import {
   fetchIssueById,
-  getStatusColor, // 导入正确的颜色辅助函数
-  getPriorityColor, // 导入正确的颜色辅助函数
+  getStatusColor,
+  getPriorityColor,
 } from '../services/IssueApi';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -32,13 +33,14 @@ interface IssueDetailScreenProps {}
 const IssueDetailScreen: React.FC<IssueDetailScreenProps> = () => {
   const route = useRoute<RouteProp<RootStackParamList, 'IssueDetail'>>();
   const navigation = useNavigation();
+  const { theme, isDarkMode } = useTheme();
 
   const { issueId } = route.params;
 
   const [issue, setIssue] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  console.log('---- issueId', issueId); // 现在这里会显示正确的 ID
+  console.log('---- issueId', issueId);
 
   useFocusEffect(
     useCallback(() => {
@@ -48,7 +50,6 @@ const IssueDetailScreen: React.FC<IssueDetailScreenProps> = () => {
           const fetchedIssue = await fetchIssueById(issueId);
           setIssue(fetchedIssue);
         } catch (error) {
-          // 处理错误，例如显示错误信息
           console.error('获取任务详情失败', error);
         } finally {
           setIsLoading(false);
@@ -64,7 +65,6 @@ const IssueDetailScreen: React.FC<IssueDetailScreenProps> = () => {
   };
 
   const handleEdit = () => {
-    // ✅ 确保在导航前 issue 存在
     if (issue) {
       navigation.navigate('EditIssue', { issue: issue });
     }
@@ -81,10 +81,9 @@ const IssueDetailScreen: React.FC<IssueDetailScreenProps> = () => {
         style: 'destructive',
         onPress: async () => {
           try {
-            // 只有在用户点击“删除”后，才执行实际的删除逻辑
             await deleteIssue(issue.id);
             console.log('Issue 删除成功！');
-            navigation.goBack(); // 删除成功后返回到列表页
+            navigation.goBack();
           } catch (error) {
             Alert.alert('错误', '删除任务失败，请稍后重试。');
           }
@@ -95,91 +94,136 @@ const IssueDetailScreen: React.FC<IssueDetailScreenProps> = () => {
 
   const renderTag = (label: string, color: string) => (
     <View style={[styles.tag, { backgroundColor: color }]}>
-      <Text style={styles.tagText}>{label}</Text>
+      <Text style={[styles.tagText, { color: theme.tagText }]}>{label}</Text>
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: theme.background }]}
+    >
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <ScrollView contentContainerStyle={styles.container}>
         {isLoading ? (
-          // ✅ 如果正在加载，显示加载指示器
-          <ActivityIndicator size="large" color="#fff" style={{ flex: 1 }} />
+          <ActivityIndicator
+            size="large"
+            color={theme.text}
+            style={{ flex: 1 }}
+          />
         ) : !issue ? (
-          // ✅ 如果加载完成但数据为空，显示一个提示
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>任务详情不存在。</Text>
+            <Text style={[styles.emptyText, { color: theme.text }]}>
+              任务详情不存在。
+            </Text>
             <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
-              <Feather name="arrow-left" size={24} color="#E0E0E0" />
-              <Text style={styles.backButtonText}>返回</Text>
+              <Feather name="arrow-left" size={24} color={theme.text} />
+              <Text style={[styles.backButtonText, { color: theme.text }]}>
+                返回
+              </Text>
             </TouchableOpacity>
           </View>
         ) : (
-          // ✅ 只有当数据可用时，才渲染详情内容
           <>
             <View style={styles.header}>
               <TouchableOpacity
                 onPress={handleGoBack}
                 style={styles.backButton}
               >
-                <Feather name="arrow-left" size={24} color="#E0E0E0" />
-                <Text style={styles.backButtonText}>Back</Text>
+                <Feather name="arrow-left" size={24} color={theme.text} />
+                <Text style={[styles.backButtonText, { color: theme.text }]}>
+                  Back
+                </Text>
               </TouchableOpacity>
               <View style={styles.headerTitleContainer}>
-                <Text style={styles.title}>{issue.title}</Text>
+                <Text style={[styles.title, { color: theme.text }]}>
+                  {issue.title}
+                </Text>
               </View>
               <View style={styles.headerTitleContainer}>
                 <View style={styles.headerButtons}>
-                  <TouchableOpacity onPress={handleEdit} style={styles.button}>
-                    <Feather name="edit-2" size={16} color="#E0E0E0" />
-                    <Text style={styles.buttonText}>Edit</Text>
+                  <TouchableOpacity
+                    onPress={handleEdit}
+                    style={[styles.button, { backgroundColor: theme.subText }]}
+                  >
+                    {/* 修复：将图标颜色设置为与背景形成对比的颜色 */}
+                    <Feather name="edit-2" size={16} color={theme.text} />
+                    <Text
+                      style={[styles.buttonText, { color: theme.buttonText }]}
+                    >
+                      Edit
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={handleDelete}
-                    style={[styles.button, styles.deleteButton]}
+                    style={[
+                      styles.button,
+                      styles.deleteButton,
+                      { backgroundColor: theme.danger },
+                    ]}
                   >
+                    {/* 修复：将图标颜色设置为白色，以确保在红色背景上清晰可见 */}
                     <Feather name="trash-2" size={16} color="#fff" />
-                    <Text style={styles.deleteButtonText}>Delete</Text>
+                    <Text
+                      style={[
+                        styles.deleteButtonText,
+                        { color: theme.buttonText },
+                      ]}
+                    >
+                      Delete
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
             </View>
 
-            <View style={styles.card}>
+            <View style={[styles.card, { backgroundColor: theme.card }]}>
               <View style={styles.tagContainer}>
-                {/* 修复：使用辅助函数获取颜色 */}
                 {renderTag(issue.status, getStatusColor(issue.status))}
-                {/* 修复：使用辅助函数获取颜色 */}
                 {renderTag(issue.priority, getPriorityColor(issue.priority))}
-                <Text style={styles.updatedText}>Updated {issue.created}</Text>
+                <Text style={[styles.updatedText, { color: theme.subText }]}>
+                  Updated {issue.created}
+                </Text>
               </View>
-              <Text style={styles.mainContentText}>{issue.description}</Text>
+              <Text style={[styles.mainContentText, { color: theme.text }]}>
+                {issue.description}
+              </Text>
             </View>
 
-            <View style={styles.card}>
-              <Text style={styles.detailsTitle}>Details</Text>
+            <View style={[styles.card, { backgroundColor: theme.card }]}>
+              <Text style={[styles.detailsTitle, { color: theme.text }]}>
+                Details
+              </Text>
               <View style={styles.detailsRow}>
-                <Text style={styles.detailsLabel}>Assigned to</Text>
-                <Text style={styles.detailsValue}>{'N/A'}</Text>
+                <Text style={[styles.detailsLabel, { color: theme.subText }]}>
+                  Assigned to
+                </Text>
+                <Text style={[styles.detailsValue, { color: theme.text }]}>
+                  {'N/A'}
+                </Text>
               </View>
               <View style={styles.detailsRow}>
-                <Text style={styles.detailsLabel}>Status</Text>
+                <Text style={[styles.detailsLabel, { color: theme.subText }]}>
+                  Status
+                </Text>
                 <View style={styles.detailsValue2}>
-                  {/* 修复：使用辅助函数获取颜色 */}
                   {renderTag(issue.status, getStatusColor(issue.status))}
                 </View>
               </View>
               <View style={styles.detailsRow}>
-                <Text style={styles.detailsLabel}>Priority</Text>
+                <Text style={[styles.detailsLabel, { color: theme.subText }]}>
+                  Priority
+                </Text>
                 <View style={styles.detailsValue2}>
-                  {/* 修复：使用辅助函数获取颜色 */}
                   {renderTag(issue.priority, getPriorityColor(issue.priority))}
                 </View>
               </View>
               <View style={styles.detailsRow}>
-                <Text style={styles.detailsLabel}>Created</Text>
-                <Text style={styles.detailsValue}>{issue.created}</Text>
+                <Text style={[styles.detailsLabel, { color: theme.subText }]}>
+                  Created
+                </Text>
+                <Text style={[styles.detailsValue, { color: theme.text }]}>
+                  {issue.created}
+                </Text>
               </View>
             </View>
           </>
@@ -192,7 +236,6 @@ const IssueDetailScreen: React.FC<IssueDetailScreenProps> = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#121212',
   },
   container: {
     padding: 16,
@@ -205,7 +248,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backButtonText: {
-    color: '#E0E0E0',
     marginLeft: 8,
   },
   headerTitleContainer: {
@@ -217,7 +259,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#E0E0E0',
   },
   headerButtons: {
     flexDirection: 'row',
@@ -228,22 +269,16 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: '#2b2b2b',
     marginRight: 8,
   },
   buttonText: {
     marginLeft: 4,
-    color: '#E0E0E0',
   },
-  deleteButton: {
-    backgroundColor: '#D9534F',
-  },
+  deleteButton: {},
   deleteButtonText: {
     marginLeft: 4,
-    color: '#fff',
   },
   card: {
-    backgroundColor: '#2b2b2b',
     borderRadius: 10,
     padding: 16,
     marginBottom: 16,
@@ -260,21 +295,17 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   tagText: {
-    color: '#fff',
     fontWeight: 'bold',
     fontSize: 12,
   },
   updatedText: {
-    color: '#A0A0A0',
     fontSize: 12,
   },
   mainContentText: {
-    color: '#E0E0E0',
     fontSize: 16,
     marginVertical: 20,
   },
   detailsTitle: {
-    color: '#E0E0E0',
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 12,
@@ -283,18 +314,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   detailsLabel: {
-    color: '#A0A0A0',
     fontSize: 14,
     marginBottom: 4,
   },
   detailsValue: {
-    color: '#E0E0E0',
     fontSize: 14,
   },
-  // ✅ 修改 detailsValue2 样式
   detailsValue2: {
-    // 移除 width: '50%'，让其宽度自适应子元素
-    color: '#E0E0E0',
     fontSize: 14,
     width: '30%',
   },
@@ -305,7 +331,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   emptyText: {
-    color: '#fff',
     fontSize: 18,
     marginBottom: 20,
   },

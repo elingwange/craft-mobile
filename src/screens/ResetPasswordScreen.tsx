@@ -7,13 +7,16 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect, StackActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { resetPassword } from '../services/AuthApi';
+import { useTheme } from '../contexts/ThemeContext';
 
 // 定义你的导航器中所有页面的类型
 type RootStackParamList = {
@@ -28,22 +31,20 @@ type ResetPasswordScreenProps = NativeStackScreenProps<
 >;
 
 const ResetPasswordScreen: FC<ResetPasswordScreenProps> = ({ navigation }) => {
-  // 移除 emailOrUsername 状态，因为我们将从 AsyncStorage 获取它
+  const { theme, isDarkMode } = useTheme();
+
   const [email, setEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // 使用 useFocusEffect 在屏幕获取焦点时加载用户数据
   useFocusEffect(
     useCallback(() => {
       const loadUserData = async () => {
         try {
-          // 从 AsyncStorage 中加载用户数据
           const userDataString = await AsyncStorage.getItem('userData');
           if (userDataString) {
             const userData = JSON.parse(userDataString);
-            // 确保 userData.email 存在
             if (userData.email) {
               setEmail(userData.email);
             }
@@ -54,13 +55,11 @@ const ResetPasswordScreen: FC<ResetPasswordScreenProps> = ({ navigation }) => {
       };
 
       loadUserData();
-      // 在屏幕失焦时，这里没有需要清理的资源，所以返回空函数
       return () => {};
     }, []),
   );
 
   const handleResetPassword = async () => {
-    // 检查新密码和确认密码是否为空
     if (!newPassword || !confirmPassword) {
       Alert.alert('错误', '所有字段都不能为空。');
       return;
@@ -73,13 +72,9 @@ const ResetPasswordScreen: FC<ResetPasswordScreenProps> = ({ navigation }) => {
 
     const state = await resetPassword(email, newPassword);
     if (state) {
-      // API 调用成功
-      // 使用 StackActions.replace 替换整个导航堆栈
-      // 'Auth' 是你在 RootNavigator 中定义的认证堆栈的名称
       navigation.dispatch(StackActions.replace('Auth'));
     }
 
-    // 在这里添加调用 API 的逻辑，使用从 AsyncStorage 获取的 email
     console.log('重置密码请求发送', {
       email,
       newPassword,
@@ -91,102 +86,152 @@ const ResetPasswordScreen: FC<ResetPasswordScreenProps> = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.screenTitle}>Reset Password</Text>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: theme.background }]}
+    >
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
 
-      {/* 邮箱输入框 - 显示邮箱名称，不可编辑 */}
-      <View style={styles.inputContainer}>
-        <Icon name="mail" size={20} color="#888" style={styles.inputIcon} />
-        <TextInput
-          style={styles.input}
-          placeholder="Email or Username"
-          placeholderTextColor="#888"
-          autoCapitalize="none"
-          // 不再使用 onChangeText，因为这个字段是不可编辑的
-          value={email}
-          // 设置 editable 为 false，使其不可编辑
-          editable={false}
-        />
-      </View>
-
-      {/* 新密码输入框 */}
-      <View style={styles.inputContainer}>
-        <Icon name="lock" size={20} color="#888" style={styles.inputIcon} />
-        <TextInput
-          style={styles.input}
-          placeholder="New Password"
-          placeholderTextColor="#888"
-          secureTextEntry={!showPassword}
-          autoCapitalize="none"
-          onChangeText={setNewPassword}
-          value={newPassword}
-        />
-        <TouchableOpacity
-          style={styles.passwordToggleIcon}
-          onPress={toggleShowPassword}
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <Text style={[styles.screenTitleText, { color: theme.text }]}>
+          Reset Password
+        </Text>
+        <View
+          style={[
+            styles.inputContainer,
+            { backgroundColor: theme.inputBackground },
+          ]}
         >
           <Icon
-            name={showPassword ? 'eye' : 'eye-off'}
+            name="mail"
             size={20}
-            color="#888"
+            color={theme.iconColor}
+            style={styles.inputIcon}
           />
-        </TouchableOpacity>
-      </View>
+          <TextInput
+            style={[styles.input, { color: theme.text }]}
+            placeholder="Email or Username"
+            placeholderTextColor={theme.placeholderText}
+            autoCapitalize="none"
+            value={email}
+            editable={false}
+          />
+        </View>
 
-      {/* 确认新密码输入框 */}
-      <View style={styles.inputContainer}>
-        <Icon name="lock" size={20} color="#888" style={styles.inputIcon} />
-        <TextInput
-          style={styles.input}
-          placeholder="Confirm New Password"
-          placeholderTextColor="#888"
-          secureTextEntry={!showPassword}
-          autoCapitalize="none"
-          onChangeText={setConfirmPassword}
-          value={confirmPassword}
-        />
-        <TouchableOpacity
-          style={styles.passwordToggleIcon}
-          onPress={toggleShowPassword}
+        <View
+          style={[
+            styles.inputContainer,
+            { backgroundColor: theme.inputBackground },
+          ]}
         >
           <Icon
-            name={showPassword ? 'eye' : 'eye-off'}
+            name="lock"
             size={20}
-            color="#888"
+            color={theme.iconColor}
+            style={styles.inputIcon}
           />
+          <TextInput
+            style={[styles.input, { color: theme.text }]}
+            placeholder="New Password"
+            placeholderTextColor={theme.placeholderText}
+            secureTextEntry={!showPassword}
+            autoCapitalize="none"
+            onChangeText={setNewPassword}
+            value={newPassword}
+          />
+          <TouchableOpacity
+            style={styles.passwordToggleIcon}
+            onPress={toggleShowPassword}
+          >
+            <Icon
+              name={showPassword ? 'eye' : 'eye-off'}
+              size={20}
+              color={theme.iconColor}
+            />
+          </TouchableOpacity>
+        </View>
+
+        <View
+          style={[
+            styles.inputContainer,
+            { backgroundColor: theme.inputBackground },
+          ]}
+        >
+          <Icon
+            name="lock"
+            size={20}
+            color={theme.iconColor}
+            style={styles.inputIcon}
+          />
+          <TextInput
+            style={[styles.input, { color: theme.text }]}
+            placeholder="Confirm New Password"
+            placeholderTextColor={theme.placeholderText}
+            secureTextEntry={!showPassword}
+            autoCapitalize="none"
+            onChangeText={setConfirmPassword}
+            value={confirmPassword}
+          />
+          <TouchableOpacity
+            style={styles.passwordToggleIcon}
+            onPress={toggleShowPassword}
+          >
+            <Icon
+              name={showPassword ? 'eye' : 'eye-off'}
+              size={20}
+              color={theme.iconColor}
+            />
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity
+          onPress={handleResetPassword}
+          style={styles.resetButtonWrapper}
+        >
+          <LinearGradient
+            colors={
+              isDarkMode ? ['#b09971', '#ffc371'] : ['#FFD700', '#FFA500']
+            }
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
+            style={styles.resetButton}
+          >
+            <Text style={styles.resetButtonText}>Reset Password</Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
-
-      {/* 重置密码按钮 */}
-      <TouchableOpacity
-        onPress={handleResetPassword}
-        style={styles.resetButtonWrapper}
-      >
-        <LinearGradient
-          colors={['#b09971', '#ffc371']}
-          start={{ x: 0, y: 0.5 }}
-          end={{ x: 1, y: 0.5 }}
-          style={styles.resetButton}
-        >
-          <Text style={styles.resetButtonText}>Reset Password</Text>
-        </LinearGradient>
-      </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  goBackButton: {
+    position: 'absolute',
+    left: 16,
+  },
+  screenTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1c1c1c',
     paddingHorizontal: 30,
   },
-  screenTitle: {
+  screenTitleText: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#E0E0E0',
     marginBottom: 30,
   },
   inputContainer: {
@@ -194,7 +239,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     height: 55,
-    backgroundColor: '#333',
     borderRadius: 10,
     marginBottom: 15,
     paddingHorizontal: 15,
@@ -205,7 +249,6 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: '100%',
-    color: '#fff',
     fontSize: 16,
   },
   passwordToggleIcon: {

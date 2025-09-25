@@ -1,15 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { NavigationContainer, StackActions } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
+
+// 导入所有屏幕
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 import AppNavigator from './AppNavigator';
 
 const AuthStack = createNativeStackNavigator();
-const RootStack = createNativeStackNavigator();
 
 // 认证流程的堆栈导航器
+// 这个组件就是你的 AuthNavigator
 const AuthStackScreen = ({ onLogin }) => {
   return (
     <AuthStack.Navigator screenOptions={{ headerShown: false }}>
@@ -22,47 +24,31 @@ const AuthStackScreen = ({ onLogin }) => {
   );
 };
 
+// 顶层根导航器
 const RootNavigator = () => {
-  // 管理登录状态，默认为 false
+  // 使用一个状态来管理登录状态
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const navigationRef = useRef(null);
 
-  // 登录成功回调
+  // 登录成功回调，更新状态为 true
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
   };
 
-  // 关键的修复：处理注销逻辑
+  // 注销回调，更新状态为 false
   const handleLogout = () => {
     setIsLoggedIn(false);
   };
 
-  // 使用 useEffect 监听 isLoggedIn 状态的变化
-  useEffect(() => {
-    if (!navigationRef.current) return;
-
-    if (isLoggedIn) {
-      // 登录成功时，替换为 MainApp 堆栈
-      navigationRef.current.dispatch(StackActions.replace('MainApp'));
-    } else {
-      // 注销成功时，替换为 Auth 堆栈
-      navigationRef.current.dispatch(StackActions.replace('Auth'));
-    }
-  }, [isLoggedIn]);
-
   return (
-    <NavigationContainer ref={navigationRef}>
-      <RootStack.Navigator
-        screenOptions={{ headerShown: false }}
-        initialRouteName={isLoggedIn ? 'MainApp' : 'Auth'}
-      >
-        <RootStack.Screen name="Auth">
-          {props => <AuthStackScreen {...props} onLogin={handleLoginSuccess} />}
-        </RootStack.Screen>
-        <RootStack.Screen name="MainApp">
-          {props => <AppNavigator {...props} onLogout={handleLogout} />}
-        </RootStack.Screen>
-      </RootStack.Navigator>
+    <NavigationContainer>
+      {/* 根据登录状态直接渲染不同的导航器 */}
+      {isLoggedIn ? (
+        // 如果已登录，渲染应用的主导航器
+        <AppNavigator onLogout={handleLogout} />
+      ) : (
+        // 如果未登录，渲染认证堆栈
+        <AuthStackScreen onLogin={handleLoginSuccess} />
+      )}
     </NavigationContainer>
   );
 };

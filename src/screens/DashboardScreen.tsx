@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { LineChart, PieChart } from 'react-native-chart-kit';
+import { useTheme } from '../contexts/ThemeContext'; // 引入 useTheme Hook
 
 // 定义 API 返回的概览数据类型
 interface DashboardApiData {
@@ -32,6 +33,7 @@ const screenWidth = Dimensions.get('window').width;
 import { fetchDashboardData } from '../services/IssueApi';
 
 const DashboardScreen: React.FC = () => {
+  const { theme, isDarkMode } = useTheme(); // 使用 useTheme 钩子
   const [dashboardData, setDashboardData] = useState<DashboardApiData | null>(
     null,
   );
@@ -56,8 +58,10 @@ const DashboardScreen: React.FC = () => {
 
   if (isLoading || !dashboardData) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#fff" />
+      <SafeAreaView
+        style={[styles.loadingContainer, { backgroundColor: theme.background }]}
+      >
+        <ActivityIndicator size="large" color={theme.text} />
       </SafeAreaView>
     );
   }
@@ -96,7 +100,7 @@ const DashboardScreen: React.FC = () => {
         color:
           predefinedColors[status] ||
           `#${Math.floor(Math.random() * 16777215).toString(16)}`,
-        legendFontColor: '#fff',
+        legendFontColor: theme.text,
         legendFontSize: 14,
       };
     });
@@ -120,44 +124,59 @@ const DashboardScreen: React.FC = () => {
 
   // 图表配置
   const chartConfig = {
-    backgroundGradientFrom: '#1e1e1e',
-    backgroundGradientTo: '#1e1e1e',
-    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-    labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+    backgroundGradientFrom: theme.card,
+    backgroundGradientTo: theme.card,
+    color: (opacity = 1) => theme.text + Math.round(opacity * 255).toString(16),
+    labelColor: (opacity = 1) =>
+      theme.subText + Math.round(opacity * 255).toString(16),
     strokeWidth: 2,
-    fillShadowGradientFrom: '#F08C3B',
-    fillShadowGradientTo: '#1e1e1e',
+    fillShadowGradientFrom: theme.primary,
+    fillShadowGradientTo: theme.card,
     fillShadowGradientFromOpacity: 0.8,
     fillShadowGradientToOpacity: 0.0,
     decimalPlaces: 0,
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
-      <Text style={styles.title}>Overview</Text>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: theme.background }]}
+    >
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      <Text style={[styles.title, { color: theme.text }]}>Overview</Text>
       <ScrollView style={styles.container}>
         {/* 统计卡片 */}
-        <View style={styles.statsCard}>
-          <Text style={styles.statNumber}>{dashboardData.totalTasks}</Text>
-          <Text style={styles.statLabel}>Total Tasks</Text>
+        <View style={[styles.statsCard, { backgroundColor: theme.card }]}>
+          <Text style={[styles.statNumber, { color: theme.text }]}>
+            {dashboardData.totalTasks}
+          </Text>
+          <Text style={[styles.statLabel, { color: theme.subText }]}>
+            Total Tasks
+          </Text>
         </View>
 
-        <View style={styles.statsCard}>
-          <Text style={styles.statNumber}>{dashboardData.completedTasks}</Text>
-          <Text style={styles.statLabel}>Completed Tasks</Text>
+        <View style={[styles.statsCard, { backgroundColor: theme.card }]}>
+          <Text style={[styles.statNumber, { color: theme.text }]}>
+            {dashboardData.completedTasks}
+          </Text>
+          <Text style={[styles.statLabel, { color: theme.subText }]}>
+            Completed Tasks
+          </Text>
         </View>
 
-        <View style={styles.statsCard}>
-          <Text style={styles.statNumber}>
+        <View style={[styles.statsCard, { backgroundColor: theme.card }]}>
+          <Text style={[styles.statNumber, { color: theme.text }]}>
             {`${(dashboardData.completionRate * 100).toFixed(0)}%`}
           </Text>
-          <Text style={styles.statLabel}>Completion Rate</Text>
+          <Text style={[styles.statLabel, { color: theme.subText }]}>
+            Completion Rate
+          </Text>
         </View>
 
         {/* 任务完成趋势图 */}
-        <View style={styles.chartCard}>
-          <Text style={styles.chartTitle}>Task Completion Trend</Text>
+        <View style={[styles.chartCard, { backgroundColor: theme.card }]}>
+          <Text style={[styles.chartTitle, { color: theme.text }]}>
+            Task Completion Trend
+          </Text>
           <LineChart
             data={getLineChartData()}
             width={screenWidth - 32}
@@ -169,8 +188,10 @@ const DashboardScreen: React.FC = () => {
         </View>
 
         {/* 任务状态分布饼图 */}
-        <View style={styles.chartCard}>
-          <Text style={styles.chartTitle}>Task Status Distribution</Text>
+        <View style={[styles.chartCard, { backgroundColor: theme.card }]}>
+          <Text style={[styles.chartTitle, { color: theme.text }]}>
+            Task Status Distribution
+          </Text>
           {hasPieChartData ? (
             <PieChart
               data={pieChartData}
@@ -184,7 +205,9 @@ const DashboardScreen: React.FC = () => {
             />
           ) : (
             <View style={styles.noDataContainer}>
-              <Text style={styles.noDataText}>暂无数据</Text>
+              <Text style={[styles.noDataText, { color: theme.text }]}>
+                暂无数据
+              </Text>
             </View>
           )}
         </View>
@@ -199,7 +222,6 @@ const DashboardScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#121212',
   },
   container: {
     padding: 16,
@@ -209,10 +231,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#E0E0E0',
   },
   statsCard: {
-    backgroundColor: '#1e1e1e',
     borderRadius: 10,
     padding: 20,
     marginBottom: 10,
@@ -223,14 +243,11 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#fff',
   },
   statLabel: {
     fontSize: 16,
-    color: '#a0a0a0',
   },
   chartCard: {
-    backgroundColor: '#1e1e1e',
     borderRadius: 10,
     padding: 16,
     marginBottom: 10,
@@ -239,7 +256,6 @@ const styles = StyleSheet.create({
   chartTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
     marginBottom: 10,
   },
   chart: {
@@ -247,7 +263,6 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#121212',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -261,7 +276,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   noDataText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },

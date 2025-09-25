@@ -14,11 +14,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
+import { useTheme } from '../contexts/ThemeContext';
 import {
   updateIssue,
   statusOptionsUI,
   priorityOptionsUI,
-  // 导入新的辅助函数
   getStatusApiValue,
   getPriorityApiValue,
 } from '../services/IssueApi';
@@ -28,6 +28,7 @@ const EditIssueScreen: React.FC = () => {
     useRoute<RouteProp<{ EditIssue: { issue: any } }, 'EditIssue'>>();
   const navigation = useNavigation();
   const { issue } = route.params;
+  const { theme, isDarkMode } = useTheme();
 
   const [title, setTitle] = useState(issue.title);
   const [description, setDescription] = useState(issue.description);
@@ -54,8 +55,8 @@ const EditIssueScreen: React.FC = () => {
       id: Number(issue.id),
       title,
       description,
-      status: getStatusApiValue(status), // 修复：使用辅助函数进行转换
-      priority: getPriorityApiValue(priority), // 修复：使用辅助函数进行转换
+      status: getStatusApiValue(status),
+      priority: getPriorityApiValue(priority),
     };
 
     try {
@@ -77,39 +78,58 @@ const EditIssueScreen: React.FC = () => {
     item: string,
     onSelect: (value: string) => void,
   ) => (
-    <TouchableOpacity style={styles.modalOption} onPress={() => onSelect(item)}>
-      <Text style={styles.modalOptionText}>{item}</Text>
+    <TouchableOpacity
+      style={[styles.modalOption, { borderBottomColor: theme.border }]}
+      onPress={() => onSelect(item)}
+    >
+      <Text style={[styles.modalOptionText, { color: theme.text }]}>
+        {item}
+      </Text>
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: theme.background }]}
+    >
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <ScrollView contentContainerStyle={styles.container}>
         {/* 顶部导航 */}
         <View style={styles.header}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
-            <Feather name="arrow-left" size={24} color="#E0E0E0" />
-            <Text style={styles.backButtonText}>Back</Text>
+            <Feather name="arrow-left" size={24} color={theme.text} />
+            <Text style={[styles.backButtonText, { color: theme.text }]}>
+              Back
+            </Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.screenTitle}>Edit Issue</Text>
+        <Text style={[styles.screenTitle, { color: theme.text }]}>
+          Edit Issue
+        </Text>
 
         {/* 表单卡片 */}
-        <View style={styles.formCard}>
+        <View style={[styles.formCard, { backgroundColor: theme.card }]}>
           <View style={styles.formRow}>
-            <Text style={styles.label}>Title</Text>
+            <Text style={[styles.label, { color: theme.subText }]}>Title</Text>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                { backgroundColor: theme.inputBackground, color: theme.text },
+              ]}
               value={title}
               onChangeText={setTitle}
             />
           </View>
 
           <View style={styles.formRow}>
-            <Text style={styles.label}>Description</Text>
+            <Text style={[styles.label, { color: theme.subText }]}>
+              Description
+            </Text>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                { backgroundColor: theme.inputBackground, color: theme.text },
+              ]}
               value={description}
               onChangeText={setDescription}
               multiline
@@ -118,25 +138,37 @@ const EditIssueScreen: React.FC = () => {
 
           {/* Status 自定义下拉菜单 */}
           <View style={styles.formRow}>
-            <Text style={styles.label}>Status</Text>
+            <Text style={[styles.label, { color: theme.subText }]}>Status</Text>
             <TouchableOpacity
-              style={styles.customPickerButton}
+              style={[
+                styles.customPickerButton,
+                { backgroundColor: theme.inputBackground },
+              ]}
               onPress={() => setStatusModalVisible(true)}
             >
-              <Text style={styles.customPickerText}>{status}</Text>
-              <Feather name="chevron-down" size={20} color="#E0E0E0" />
+              <Text style={[styles.customPickerText, { color: theme.text }]}>
+                {status}
+              </Text>
+              <Feather name="chevron-down" size={20} color={theme.text} />
             </TouchableOpacity>
           </View>
 
           {/* Priority 自定义下拉菜单 */}
           <View style={styles.formRow}>
-            <Text style={styles.label}>Priority</Text>
+            <Text style={[styles.label, { color: theme.subText }]}>
+              Priority
+            </Text>
             <TouchableOpacity
-              style={styles.customPickerButton}
+              style={[
+                styles.customPickerButton,
+                { backgroundColor: theme.inputBackground },
+              ]}
               onPress={() => setPriorityModalVisible(true)}
             >
-              <Text style={styles.customPickerText}>{priority}</Text>
-              <Feather name="chevron-down" size={20} color="#E0E0E0" />
+              <Text style={[styles.customPickerText, { color: theme.text }]}>
+                {priority}
+              </Text>
+              <Feather name="chevron-down" size={20} color={theme.text} />
             </TouchableOpacity>
           </View>
         </View>
@@ -145,17 +177,34 @@ const EditIssueScreen: React.FC = () => {
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             onPress={handleCancel}
-            style={[styles.actionButton, styles.cancelButton]}
+            style={[
+              styles.actionButton,
+              styles.cancelButton,
+              { backgroundColor: theme.cancelButton },
+            ]}
           >
-            <Text style={[styles.actionButtonText, styles.cancelButtonText]}>
+            <Text
+              style={[
+                styles.actionButtonText,
+                { color: theme.cancelButtonText },
+              ]}
+            >
               Cancel
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handleUpdate}
-            style={[styles.actionButton, styles.updateButton]}
+            style={[
+              styles.actionButton,
+              styles.updateButton,
+              { backgroundColor: theme.primary },
+            ]}
           >
-            <Text style={styles.actionButtonText}>Update Issue</Text>
+            <Text
+              style={[styles.actionButtonText, { color: theme.buttonText }]}
+            >
+              Update Issue
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -168,8 +217,10 @@ const EditIssueScreen: React.FC = () => {
         onRequestClose={() => setStatusModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Status</Text>
+          <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>
+              Select Status
+            </Text>
             <FlatList
               data={statusOptionsUI}
               keyExtractor={item => item}
@@ -182,9 +233,16 @@ const EditIssueScreen: React.FC = () => {
             />
             <TouchableOpacity
               onPress={() => setStatusModalVisible(false)}
-              style={styles.modalCloseButton}
+              style={[
+                styles.modalCloseButton,
+                { backgroundColor: theme.inputBackground },
+              ]}
             >
-              <Text style={styles.modalCloseButtonText}>Close</Text>
+              <Text
+                style={[styles.modalCloseButtonText, { color: theme.subText }]}
+              >
+                Close
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -198,8 +256,10 @@ const EditIssueScreen: React.FC = () => {
         onRequestClose={() => setPriorityModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Priority</Text>
+          <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>
+              Select Priority
+            </Text>
             <FlatList
               data={priorityOptionsUI}
               keyExtractor={item => item}
@@ -212,9 +272,16 @@ const EditIssueScreen: React.FC = () => {
             />
             <TouchableOpacity
               onPress={() => setPriorityModalVisible(false)}
-              style={styles.modalCloseButton}
+              style={[
+                styles.modalCloseButton,
+                { backgroundColor: theme.inputBackground },
+              ]}
             >
-              <Text style={styles.modalCloseButtonText}>Close</Text>
+              <Text
+                style={[styles.modalCloseButtonText, { color: theme.subText }]}
+              >
+                Close
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -226,7 +293,6 @@ const EditIssueScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#121212',
   },
   container: {
     padding: 16,
@@ -245,18 +311,14 @@ const styles = StyleSheet.create({
     left: 0,
   },
   backButtonText: {
-    color: '#E0E0E0',
     marginLeft: 8,
   },
   screenTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#E0E0E0',
-    // textAlign: 'center',
     marginVertical: 20,
   },
   formCard: {
-    backgroundColor: '#2b2b2b',
     borderRadius: 10,
     padding: 16,
   },
@@ -265,12 +327,9 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#A0A0A0',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#333333',
-    color: '#E0E0E0',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -290,32 +349,21 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontWeight: 'bold',
     fontSize: 16,
-    color: '#fff',
   },
-  cancelButton: {
-    backgroundColor: '#2b2b2b',
-  },
-  cancelButtonText: {
-    color: '#A0A0A0',
-  },
-  updateButton: {
-    backgroundColor: '#F0AD4E',
-  },
-  // ✅ 新增自定义下拉菜单样式
+  cancelButton: {},
+  cancelButtonText: {},
+  updateButton: {},
   customPickerButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#333333',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
   customPickerText: {
-    color: '#E0E0E0',
     fontSize: 16,
   },
-  // ✅ 新增模态框样式
   modalOverlay: {
     flex: 1,
     justifyContent: 'center',
@@ -323,14 +371,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    backgroundColor: '#2b2b2b',
     borderRadius: 10,
     padding: 20,
     width: '80%',
     maxHeight: '60%',
   },
   modalTitle: {
-    color: '#E0E0E0',
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 15,
@@ -339,22 +385,18 @@ const styles = StyleSheet.create({
   modalOption: {
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#444444',
   },
   modalOptionText: {
-    color: '#E0E0E0',
     fontSize: 16,
     textAlign: 'center',
   },
   modalCloseButton: {
     marginTop: 20,
     paddingVertical: 12,
-    backgroundColor: '#333333',
     borderRadius: 8,
     alignItems: 'center',
   },
   modalCloseButtonText: {
-    color: '#A0A0A0',
     fontSize: 16,
   },
 });

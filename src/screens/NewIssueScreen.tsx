@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../contexts/ThemeContext';
 import {
   createIssue,
   statusOptionsUI,
@@ -22,8 +23,9 @@ import {
 
 const AddIssueScreen: React.FC = () => {
   const navigation = useNavigation();
+  const { theme, isDarkMode } = useTheme();
 
-  // ✅ 为新 Issue 设置默认初始状态
+  // 为新 Issue 设置默认初始状态
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState(statusOptionsUI[0]);
@@ -46,7 +48,7 @@ const AddIssueScreen: React.FC = () => {
       return;
     }
 
-    // ✅ 新增：将 UI 状态转换为 API 所需的格式
+    // 新增：将 UI 状态转换为 API 所需的格式
     const apiStatus = status.toLowerCase().replace(/\s/g, '_');
     const apiPriority = priority.toLowerCase();
 
@@ -58,12 +60,12 @@ const AddIssueScreen: React.FC = () => {
     };
 
     try {
-      // ✅ 捕获潜在的异常
+      // 捕获潜在的异常
       await createIssue(newIssueData);
       console.log('Issue 创建成功！');
       navigation.goBack(); // 只有在请求成功时才会返回
     } catch (error) {
-      // ✅ 在请求失败时执行
+      // 在请求失败时执行
       console.error('Issue 创建失败:', error);
       Alert.alert('错误', '创建任务失败，请稍后重试。');
     }
@@ -77,32 +79,46 @@ const AddIssueScreen: React.FC = () => {
     item: string,
     onSelect: (value: string) => void,
   ) => (
-    <TouchableOpacity style={styles.modalOption} onPress={() => onSelect(item)}>
-      <Text style={styles.modalOptionText}>{item}</Text>
+    <TouchableOpacity
+      style={[styles.modalOption, { borderBottomColor: theme.border }]}
+      onPress={() => onSelect(item)}
+    >
+      <Text style={[styles.modalOptionText, { color: theme.text }]}>
+        {item}
+      </Text>
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: theme.background }]}
+    >
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <ScrollView contentContainerStyle={styles.container}>
         {/* 顶部导航 */}
         <View style={styles.header}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
-            <Feather name="arrow-left" size={24} color="#E0E0E0" />
-            <Text style={styles.backButtonText}>Back</Text>
+            <Feather name="arrow-left" size={24} color={theme.text} />
+            <Text style={[styles.backButtonText, { color: theme.text }]}>
+              Back
+            </Text>
           </TouchableOpacity>
-          {/* ✅ 页面标题 */}
-          <Text style={styles.screenTitle}>Add Issue</Text>
+          {/* 页面标题 */}
+          <Text style={[styles.screenTitle, { color: theme.text }]}>
+            Add Issue
+          </Text>
         </View>
 
         {/* 表单卡片 */}
-        <View style={styles.formCard}>
+        <View style={[styles.formCard, { backgroundColor: theme.card }]}>
           {/* Title 输入框 */}
           <View style={styles.formRow}>
-            <Text style={styles.label}>Title</Text>
+            <Text style={[styles.label, { color: theme.subText }]}>Title</Text>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                { backgroundColor: theme.inputBackground, color: theme.text },
+              ]}
               value={title}
               onChangeText={setTitle}
             />
@@ -110,9 +126,14 @@ const AddIssueScreen: React.FC = () => {
 
           {/* Description 输入框 */}
           <View style={styles.formRow}>
-            <Text style={styles.label}>Description</Text>
+            <Text style={[styles.label, { color: theme.subText }]}>
+              Description
+            </Text>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                { backgroundColor: theme.inputBackground, color: theme.text },
+              ]}
               value={description}
               onChangeText={setDescription}
               multiline
@@ -121,25 +142,37 @@ const AddIssueScreen: React.FC = () => {
 
           {/* Status 自定义下拉菜单 */}
           <View style={styles.formRow}>
-            <Text style={styles.label}>Status</Text>
+            <Text style={[styles.label, { color: theme.subText }]}>Status</Text>
             <TouchableOpacity
-              style={styles.customPickerButton}
+              style={[
+                styles.customPickerButton,
+                { backgroundColor: theme.inputBackground },
+              ]}
               onPress={() => setStatusModalVisible(true)}
             >
-              <Text style={styles.customPickerText}>{status}</Text>
-              <Feather name="chevron-down" size={20} color="#E0E0E0" />
+              <Text style={[styles.customPickerText, { color: theme.text }]}>
+                {status}
+              </Text>
+              <Feather name="chevron-down" size={20} color={theme.text} />
             </TouchableOpacity>
           </View>
 
           {/* Priority 自定义下拉菜单 */}
           <View style={styles.formRow}>
-            <Text style={styles.label}>Priority</Text>
+            <Text style={[styles.label, { color: theme.subText }]}>
+              Priority
+            </Text>
             <TouchableOpacity
-              style={styles.customPickerButton}
+              style={[
+                styles.customPickerButton,
+                { backgroundColor: theme.inputBackground },
+              ]}
               onPress={() => setPriorityModalVisible(true)}
             >
-              <Text style={styles.customPickerText}>{priority}</Text>
-              <Feather name="chevron-down" size={20} color="#E0E0E0" />
+              <Text style={[styles.customPickerText, { color: theme.text }]}>
+                {priority}
+              </Text>
+              <Feather name="chevron-down" size={20} color={theme.text} />
             </TouchableOpacity>
           </View>
         </View>
@@ -148,18 +181,35 @@ const AddIssueScreen: React.FC = () => {
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             onPress={handleCancel}
-            style={[styles.actionButton, styles.cancelButton]}
+            style={[
+              styles.actionButton,
+              styles.cancelButton,
+              { backgroundColor: theme.cancelButton },
+            ]}
           >
-            <Text style={[styles.actionButtonText, styles.cancelButtonText]}>
+            <Text
+              style={[
+                styles.actionButtonText,
+                { color: theme.cancelButtonText },
+              ]}
+            >
               Cancel
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handleCreate}
-            style={[styles.actionButton, styles.updateButton]}
+            style={[
+              styles.actionButton,
+              styles.updateButton,
+              { backgroundColor: theme.primary },
+            ]}
           >
-            {/* ✅ 按钮文本 */}
-            <Text style={styles.actionButtonText}>Create Issue</Text>
+            {/* 按钮文本 */}
+            <Text
+              style={[styles.actionButtonText, { color: theme.buttonText }]}
+            >
+              Create Issue
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -172,8 +222,10 @@ const AddIssueScreen: React.FC = () => {
         onRequestClose={() => setStatusModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Status</Text>
+          <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>
+              Select Status
+            </Text>
             <FlatList
               data={statusOptionsUI}
               keyExtractor={item => item}
@@ -186,9 +238,16 @@ const AddIssueScreen: React.FC = () => {
             />
             <TouchableOpacity
               onPress={() => setStatusModalVisible(false)}
-              style={styles.modalCloseButton}
+              style={[
+                styles.modalCloseButton,
+                { backgroundColor: theme.inputBackground },
+              ]}
             >
-              <Text style={styles.modalCloseButtonText}>Close</Text>
+              <Text
+                style={[styles.modalCloseButtonText, { color: theme.subText }]}
+              >
+                Close
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -201,8 +260,10 @@ const AddIssueScreen: React.FC = () => {
         onRequestClose={() => setPriorityModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Priority</Text>
+          <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>
+              Select Priority
+            </Text>
             <FlatList
               data={priorityOptionsUI}
               keyExtractor={item => item}
@@ -215,9 +276,16 @@ const AddIssueScreen: React.FC = () => {
             />
             <TouchableOpacity
               onPress={() => setPriorityModalVisible(false)}
-              style={styles.modalCloseButton}
+              style={[
+                styles.modalCloseButton,
+                { backgroundColor: theme.inputBackground },
+              ]}
             >
-              <Text style={styles.modalCloseButtonText}>Close</Text>
+              <Text
+                style={[styles.modalCloseButtonText, { color: theme.subText }]}
+              >
+                Close
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -229,7 +297,6 @@ const AddIssueScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#121212',
   },
   container: {
     padding: 16,
@@ -248,17 +315,14 @@ const styles = StyleSheet.create({
     left: 0,
   },
   backButtonText: {
-    color: '#E0E0E0',
     marginLeft: 8,
   },
   screenTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#E0E0E0',
     textAlign: 'center',
   },
   formCard: {
-    backgroundColor: '#2b2b2b',
     borderRadius: 10,
     padding: 16,
   },
@@ -267,12 +331,9 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#A0A0A0',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#333333',
-    color: '#E0E0E0',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -292,28 +353,19 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontWeight: 'bold',
     fontSize: 16,
-    color: '#fff',
   },
-  cancelButton: {
-    backgroundColor: '#2b2b2b',
-  },
-  cancelButtonText: {
-    color: '#A0A0A0',
-  },
-  updateButton: {
-    backgroundColor: '#F0AD4E',
-  },
+  cancelButton: {},
+  cancelButtonText: {},
+  updateButton: {},
   customPickerButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#333333',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
   customPickerText: {
-    color: '#E0E0E0',
     fontSize: 16,
   },
   modalOverlay: {
@@ -323,14 +375,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    backgroundColor: '#2b2b2b',
     borderRadius: 10,
     padding: 20,
     width: '80%',
     maxHeight: '60%',
   },
   modalTitle: {
-    color: '#E0E0E0',
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 15,
@@ -339,22 +389,18 @@ const styles = StyleSheet.create({
   modalOption: {
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#444444',
   },
   modalOptionText: {
-    color: '#E0E0E0',
     fontSize: 16,
     textAlign: 'center',
   },
   modalCloseButton: {
     marginTop: 20,
     paddingVertical: 12,
-    backgroundColor: '#333333',
     borderRadius: 8,
     alignItems: 'center',
   },
   modalCloseButtonText: {
-    color: '#A0A0A0',
     fontSize: 16,
   },
 });

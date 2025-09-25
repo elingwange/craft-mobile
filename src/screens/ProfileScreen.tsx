@@ -11,11 +11,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useTheme } from '../contexts/ThemeContext';
 import { logout } from '../services/AuthApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const ProfileScreen = () => {
-  const navigation = useNavigation();
+// 接受 onLogout 作为 prop，不再直接进行导航
+const ProfileScreen = ({ onLogout }) => {
+  const { theme, isDarkMode, toggleTheme } = useTheme();
+  const navigation = useNavigation(); // 导航可以保留，用于其他页面如 ResetPassword
   const [userName, setUserName] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,10 +52,13 @@ const ProfileScreen = () => {
   );
 
   const handleResetPassword = () => {
+    // 这里的导航逻辑可以保持不变
     navigation.navigate('ResetPassword');
   };
 
-  const handleAppearance = () => {};
+  const handleAppearance = () => {
+    toggleTheme();
+  };
 
   const handleLogout = () => {
     Alert.alert(
@@ -69,10 +75,11 @@ const ProfileScreen = () => {
           onPress: async () => {
             const isLoggedOut = await logout();
             if (isLoggedOut) {
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Login' }],
-              });
+              // 关键修正：调用父组件传递的 onLogout prop
+              // 这会通知顶层导航器状态已改变
+              if (onLogout) {
+                onLogout();
+              }
             } else {
               Alert.alert('登出失败', '请稍后重试。');
             }
@@ -84,70 +91,110 @@ const ProfileScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: theme.background }]}
+    >
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <View style={styles.container}>
-        <Text style={styles.screenTitle}>Profile</Text>
+        <Text style={[styles.screenTitle, { color: theme.text }]}>Profile</Text>
         {isLoading ? (
-          <ActivityIndicator size="large" color="#E0E0E0" />
+          <ActivityIndicator size="large" color={theme.text} />
         ) : userName ? (
           <>
-            {/* 上半部分 - 用户信息 */}
-            <View style={styles.profileSection}>
-              <View style={styles.profileItem}>
-                <Feather name="user" size={24} color="#A0A0A0" />
+            <View
+              style={[styles.profileSection, { backgroundColor: theme.card }]}
+            >
+              <View
+                style={[
+                  styles.profileItem,
+                  { borderBottomColor: theme.border },
+                ]}
+              >
+                <Feather name="user" size={24} color={theme.subText} />
                 <View style={styles.profileTextContainer}>
-                  <Text style={styles.label}>Username</Text>
-                  <Text style={styles.value}>{userName}</Text>
+                  <Text style={[styles.label, { color: theme.subText }]}>
+                    Username
+                  </Text>
+                  <Text style={[styles.value, { color: theme.text }]}>
+                    {userName}
+                  </Text>
                 </View>
               </View>
               <View style={{ height: 20 }} />
               <View style={styles.profileItem}>
-                <Feather name="mail" size={24} color="#A0A0A0" />
+                <Feather name="mail" size={24} color={theme.subText} />
                 <View style={styles.profileTextContainer}>
-                  <Text style={styles.label}>Email</Text>
-                  <Text style={styles.value}>{email}</Text>
+                  <Text style={[styles.label, { color: theme.subText }]}>
+                    Email
+                  </Text>
+                  <Text style={[styles.value, { color: theme.text }]}>
+                    {email}
+                  </Text>
                 </View>
               </View>
             </View>
 
-            {/* 下半部分 - 操作列表 */}
-            <View style={styles.actionsSection}>
-              <Text style={styles.actionsTitle}>Settings</Text>
+            <View
+              style={[styles.actionsSection, { backgroundColor: theme.card }]}
+            >
+              <Text style={[styles.actionsTitle, { color: theme.text }]}>
+                Settings
+              </Text>
 
               <TouchableOpacity
-                style={styles.actionButton}
+                style={[
+                  styles.actionButton,
+                  { borderBottomColor: theme.border },
+                ]}
                 onPress={handleResetPassword}
               >
-                <Feather name="lock" size={24} color="#A0A0A0" />
-                <Text style={styles.actionText}>Reset Password</Text>
+                <Feather name="lock" size={24} color={theme.subText} />
+                <Text style={[styles.actionText, { color: theme.text }]}>
+                  Reset Password
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.actionButton}
+                style={[
+                  styles.actionButton,
+                  { borderBottomColor: theme.border },
+                ]}
                 onPress={handleAppearance}
               >
-                <Feather name="moon" size={24} color="#A0A0A0" />
-                <Text style={styles.actionText}>Change Theme</Text>
+                <Feather name="moon" size={24} color={theme.subText} />
+                <Text style={[styles.actionText, { color: theme.text }]}>
+                  Change Theme
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.actionButtonLogout}
                 onPress={handleLogout}
               >
-                <Feather name="log-out" size={24} color="#A0A0A0" />
-                <Text style={styles.actionTextLogout}>Log Out</Text>
+                <Feather name="log-out" size={24} color={theme.danger} />
+                <Text
+                  style={[styles.actionTextLogout, { color: theme.danger }]}
+                >
+                  Log Out
+                </Text>
               </TouchableOpacity>
             </View>
           </>
         ) : (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>无法加载用户信息。</Text>
+            <Text style={[styles.emptyText, { color: theme.subText }]}>
+              无法加载用户信息。
+            </Text>
             <TouchableOpacity
               onPress={() => navigation.navigate('Login')}
-              style={styles.backToLoginButton}
+              style={[
+                styles.backToLoginButton,
+                { backgroundColor: theme.card },
+              ]}
             >
-              <Text style={styles.backToLoginText}>返回登录页</Text>
+              <Text style={[styles.backToLoginText, { color: theme.text }]}>
+                返回登录页
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -159,7 +206,6 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#121212',
   },
   container: {
     flex: 1,
@@ -168,11 +214,9 @@ const styles = StyleSheet.create({
   screenTitle: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#E0E0E0',
     marginBottom: 20,
   },
   profileSection: {
-    backgroundColor: '#1E1E1E',
     borderRadius: 12,
     padding: 20,
     marginBottom: 30,
@@ -181,7 +225,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#2b2b2b',
     paddingBottom: 20,
   },
   profileTextContainer: {
@@ -189,23 +232,19 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#A0A0A0',
   },
   value: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#E0E0E0',
     marginTop: 4,
   },
   actionsSection: {
-    backgroundColor: '#1E1E1E',
     borderRadius: 12,
     padding: 20,
   },
   actionsTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#E0E0E0',
     marginBottom: 15,
   },
   actionButton: {
@@ -213,7 +252,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#2b2b2b',
   },
   actionButtonLogout: {
     flexDirection: 'row',
@@ -223,12 +261,10 @@ const styles = StyleSheet.create({
   actionText: {
     marginLeft: 15,
     fontSize: 16,
-    color: '#E0E0E0',
   },
   actionTextLogout: {
     marginLeft: 15,
     fontSize: 16,
-    color: '#D9534F',
     fontWeight: 'bold',
   },
   emptyContainer: {
@@ -237,17 +273,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    color: '#A0A0A0',
     fontSize: 16,
     marginBottom: 20,
   },
   backToLoginButton: {
-    backgroundColor: '#333333',
     padding: 12,
     borderRadius: 8,
   },
   backToLoginText: {
-    color: '#E0E0E0',
     fontSize: 14,
   },
 });
