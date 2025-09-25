@@ -64,28 +64,47 @@ const DashboardScreen: React.FC = () => {
 
   // 为饼图数据添加颜色和标签
   const getPieChartData = () => {
-    const colors = {
-      open: '#70a1ff',
-      in_progress: '#feca57',
+    // 预设颜色
+    const predefinedColors = {
+      done: '#1dd1a1',
       completed: '#1dd1a1',
-      backlog: '#575fcf',
-      done: '#5CB85C',
-      low: '#3498DB',
-      medium: '#9B59B6',
-      high: '#D9534F',
+      todo: '#feca57',
+      open: '#feca57',
+      in_progress: '#575fcf',
+      backlog: '#a0a0a0',
     };
 
-    return dashboardData.taskStatusDistribution.map(item => {
-      const formattedStatus = item.status.replace(/_/g, ' ');
+    // 定义所有需要显示的固定状态
+    const allStatuses = ['done', 'todo', 'in_progress', 'backlog'];
+
+    // 创建一个 Map，用于快速查找 API 返回的数据
+    const statusMap = new Map(
+      dashboardData.taskStatusDistribution.map(item => [
+        item.status,
+        item.count,
+      ]),
+    );
+
+    // 强制包含所有状态，即使计数为0
+    return allStatuses.map(status => {
+      const count = statusMap.get(status) || 0;
+      const formattedStatus = status.replace(/_/g, ' ');
+
       return {
-        name: formattedStatus,
-        count: item.count,
-        color: colors[item.status],
+        name: `${formattedStatus}`, // 移除百分比，只保留状态名称
+        count: count,
+        color:
+          predefinedColors[status] ||
+          `#${Math.floor(Math.random() * 16777215).toString(16)}`,
         legendFontColor: '#fff',
         legendFontSize: 14,
       };
     });
   };
+
+  // 检查扇形图数据是否全部为零，用于条件渲染
+  const pieChartData = getPieChartData();
+  const hasPieChartData = pieChartData.some(item => item.count > 0);
 
   // 格式化折线图数据
   const getLineChartData = () => {
@@ -100,19 +119,17 @@ const DashboardScreen: React.FC = () => {
   };
 
   // 图表配置
-  // ✅ 更新 chartConfig，添加渐变色配置
   const chartConfig = {
     backgroundGradientFrom: '#1e1e1e',
     backgroundGradientTo: '#1e1e1e',
     color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
     labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
     strokeWidth: 2,
-    // ✅ 新增渐变色配置
-    fillShadowGradientFrom: '#F08C3B', // 渐变起始颜色 (橙色)
-    fillShadowGradientTo: '#1e1e1e', // 渐变结束颜色 (与背景色一致)
-    fillShadowGradientFromOpacity: 0.8, // 渐变起始颜色不透明度
-    fillShadowGradientToOpacity: 0.0, // 渐变结束颜色透明度
-    decimalPlaces: 0, // 如果数据是整数，可以设置小数位为0
+    fillShadowGradientFrom: '#F08C3B',
+    fillShadowGradientTo: '#1e1e1e',
+    fillShadowGradientFromOpacity: 0.8,
+    fillShadowGradientToOpacity: 0.0,
+    decimalPlaces: 0,
   };
 
   return (
@@ -146,7 +163,7 @@ const DashboardScreen: React.FC = () => {
             width={screenWidth - 32}
             height={220}
             chartConfig={chartConfig}
-            bezier // ✅ 启用贝塞尔曲线，使折线更平滑
+            bezier
             style={styles.chart}
           />
         </View>
@@ -154,16 +171,22 @@ const DashboardScreen: React.FC = () => {
         {/* 任务状态分布饼图 */}
         <View style={styles.chartCard}>
           <Text style={styles.chartTitle}>Task Status Distribution</Text>
-          <PieChart
-            data={getPieChartData()} // ✅ 使用格式化后的数据
-            width={350}
-            height={220}
-            chartConfig={chartConfig}
-            accessor="count"
-            backgroundColor="transparent"
-            paddingLeft="15"
-            style={styles.chart}
-          />
+          {hasPieChartData ? (
+            <PieChart
+              data={pieChartData}
+              width={350}
+              height={220}
+              chartConfig={chartConfig}
+              accessor="count"
+              backgroundColor="transparent"
+              paddingLeft="15"
+              style={styles.chart}
+            />
+          ) : (
+            <View style={styles.noDataContainer}>
+              <Text style={styles.noDataText}>暂无数据</Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.chartBottom} />
@@ -230,6 +253,17 @@ const styles = StyleSheet.create({
   },
   chartBottom: {
     marginBottom: 30,
+  },
+  noDataContainer: {
+    width: 350,
+    height: 220,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noDataText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
