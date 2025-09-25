@@ -1,4 +1,10 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useEffect,
+} from 'react';
 import { useColorScheme } from 'react-native';
 
 // 定义主题的颜色类型
@@ -82,6 +88,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const colorScheme = useColorScheme(); // 获取系统主题
   const [isDarkMode, setIsDarkMode] = useState(colorScheme === 'dark');
   const theme = isDarkMode ? darkTheme : lightTheme;
+
+  // 关键修改: 监听系统主题变化，并更新 isDarkMode 状态
+  useEffect(() => {
+    setIsDarkMode(colorScheme === 'dark');
+  }, [colorScheme]);
 
   const toggleTheme = () => {
     setIsDarkMode(prev => !prev);

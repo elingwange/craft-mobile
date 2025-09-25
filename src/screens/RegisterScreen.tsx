@@ -15,6 +15,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { signup } from '../services/AuthApi';
 import { privacyPolicyContent } from '../const';
+import { useTheme } from '../contexts/ThemeContext';
 
 // 定义你的导航器中所有页面的类型
 type RootStackParamList = {
@@ -29,13 +30,12 @@ type RegisterScreenProps = NativeStackScreenProps<
 >;
 
 const RegisterScreen: FC<RegisterScreenProps> = ({ navigation }) => {
+  const { theme, isDarkMode } = useTheme();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
-  // 新增状态：控制密码可见性
   const [showPassword, setShowPassword] = useState(false);
-
   const [isPolicyModalVisible, setPolicyModalVisible] = useState(false);
 
   const handleSignUp = async (): Promise<void> => {
@@ -61,12 +61,10 @@ const RegisterScreen: FC<RegisterScreenProps> = ({ navigation }) => {
     setAgreeToTerms(prevValue => !prevValue);
   };
 
-  // 新增函数：切换密码可见性
   const toggleShowPassword = (): void => {
     setShowPassword(prevValue => !prevValue);
   };
 
-  // ✅ 新增函数：打开和关闭隐私政策弹窗
   const openPolicyModal = (): void => {
     setPolicyModalVisible(true);
   };
@@ -76,35 +74,58 @@ const RegisterScreen: FC<RegisterScreenProps> = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.headerLogoContainer}>
-        {/* 使用与登录界面相同的 logo 和样式 */}
         <Image
           source={require('../../assets/images/app_logo2.png')}
           style={styles.logo}
         />
-        <Text style={styles.craftText}>Craft</Text>
+        <Text style={[styles.craftText, { color: theme.text }]}>Craft</Text>
       </View>
-      {/* 用户名输入框 */}
-      <View style={styles.inputContainer}>
-        <Icon name="user" size={20} color="#888" style={styles.inputIcon} />
+      <View
+        style={[
+          styles.inputContainer,
+          {
+            backgroundColor: theme.inputBackground,
+            borderColor: isDarkMode ? theme.border : 'transparent',
+          },
+        ]}
+      >
+        <Icon
+          name="user"
+          size={20}
+          color={theme.subText}
+          style={styles.inputIcon}
+        />
         <TextInput
-          style={styles.input}
+          style={[styles.input, { color: theme.text }]}
           placeholder="Username"
-          placeholderTextColor="#888"
+          placeholderTextColor={theme.subText}
           autoCapitalize="none"
           onChangeText={setUsername}
           value={username}
         />
       </View>
 
-      {/* 邮箱输入框 */}
-      <View style={styles.inputContainer}>
-        <Icon name="mail" size={20} color="#888" style={styles.inputIcon} />
+      <View
+        style={[
+          styles.inputContainer,
+          {
+            backgroundColor: theme.inputBackground,
+            borderColor: isDarkMode ? theme.border : 'transparent',
+          },
+        ]}
+      >
+        <Icon
+          name="mail"
+          size={20}
+          color={theme.subText}
+          style={styles.inputIcon}
+        />
         <TextInput
-          style={styles.input}
+          style={[styles.input, { color: theme.text }]}
           placeholder="Email"
-          placeholderTextColor="#888"
+          placeholderTextColor={theme.subText}
           keyboardType="email-address"
           autoCapitalize="none"
           onChangeText={setEmail}
@@ -112,20 +133,30 @@ const RegisterScreen: FC<RegisterScreenProps> = ({ navigation }) => {
         />
       </View>
 
-      {/* 密码输入框 */}
-      <View style={styles.inputContainer}>
-        <Icon name="lock" size={20} color="#888" style={styles.inputIcon} />
+      <View
+        style={[
+          styles.inputContainer,
+          {
+            backgroundColor: theme.inputBackground,
+            borderColor: isDarkMode ? theme.border : 'transparent',
+          },
+        ]}
+      >
+        <Icon
+          name="lock"
+          size={20}
+          color={theme.subText}
+          style={styles.inputIcon}
+        />
         <TextInput
-          style={styles.input}
+          style={[styles.input, { color: theme.text }]}
           placeholder="Password"
-          placeholderTextColor="#888"
-          // 根据 showPassword 状态动态设置 secureTextEntry
+          placeholderTextColor={theme.subText}
           secureTextEntry={!showPassword}
           autoCapitalize="none"
           onChangeText={setPassword}
           value={password}
         />
-        {/* 密码显示/隐藏按钮 */}
         <TouchableOpacity
           style={styles.passwordToggleIcon}
           onPress={toggleShowPassword}
@@ -133,12 +164,11 @@ const RegisterScreen: FC<RegisterScreenProps> = ({ navigation }) => {
           <Icon
             name={showPassword ? 'eye' : 'eye-off'}
             size={20}
-            color="#888"
+            color={theme.subText}
           />
         </TouchableOpacity>
       </View>
 
-      {/* 注册按钮 */}
       <TouchableOpacity
         onPress={handleSignUp}
         style={styles.signInButtonWrapper}
@@ -153,35 +183,51 @@ const RegisterScreen: FC<RegisterScreenProps> = ({ navigation }) => {
         </LinearGradient>
       </TouchableOpacity>
 
-      {/* 隐私政策复选框 */}
       <View style={styles.termsContainer}>
         <TouchableOpacity onPress={toggleAgreeToTerms} style={styles.checkbox}>
           {agreeToTerms ? (
-            <Icon name="check-square" size={18} color="#b09971" />
+            <Icon name="check-square" size={18} color={theme.primary} />
           ) : (
-            <Icon name="square" size={18} color="#888" />
+            <Icon name="square" size={18} color={theme.subText} />
           )}
         </TouchableOpacity>
-        <Text style={styles.termsText}>
+        <Text style={[styles.termsText, { color: theme.subText }]}>
           You have read and agree to the{' '}
-          <Text style={styles.privacyPolicyText} onPress={openPolicyModal}>
+          <Text
+            style={[styles.privacyPolicyText, { color: theme.primary }]}
+            onPress={openPolicyModal}
+          >
             Privacy Policy
           </Text>
         </Text>
       </View>
 
-      {/* ✅ 新增：隐私政策弹窗 */}
       {isPolicyModalVisible && (
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+        <View
+          style={[
+            styles.modalOverlay,
+            {
+              backgroundColor: isDarkMode
+                ? 'rgba(0, 0, 0, 0.8)'
+                : 'rgba(0, 0, 0, 0.5)',
+            },
+          ]}
+        >
+          <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
             <ScrollView contentContainerStyle={styles.policyScrollView}>
-              <Text style={styles.policyText}>{privacyPolicyContent}</Text>
+              <Text style={[styles.policyText, { color: theme.text }]}>
+                {privacyPolicyContent}
+              </Text>
             </ScrollView>
             <TouchableOpacity
               onPress={closePolicyModal}
-              style={styles.closeButton}
+              style={[styles.closeButton, { backgroundColor: theme.primary }]}
             >
-              <Text style={styles.closeButtonText}>Close</Text>
+              <Text
+                style={[styles.closeButtonText, { color: theme.buttonText }]}
+              >
+                Close
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -191,9 +237,11 @@ const RegisterScreen: FC<RegisterScreenProps> = ({ navigation }) => {
         onPress={() => navigation.goBack()}
         style={styles.signInLink}
       >
-        <Text style={styles.signInLinkText}>
+        <Text style={[styles.signInLinkText, { color: theme.subText }]}>
           Already have an account?{' '}
-          <Text style={styles.signInLinkHighlight}>Sign In</Text>
+          <Text style={[styles.signInLinkHighlight, { color: theme.primary }]}>
+            Sign In
+          </Text>
         </Text>
       </TouchableOpacity>
     </View>
@@ -205,7 +253,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1c1c1c',
     paddingHorizontal: 30,
   },
   headerLogoContainer: {
@@ -222,13 +269,11 @@ const styles = StyleSheet.create({
   },
   craftText: {
     fontSize: 38,
-    color: '#fff',
     fontWeight: 'bold',
   },
   screenTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#E0E0E0',
     marginBottom: 30,
   },
   inputContainer: {
@@ -236,7 +281,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     height: 55,
-    backgroundColor: '#333',
+    borderWidth: 1,
     borderRadius: 10,
     marginBottom: 15,
     paddingHorizontal: 15,
@@ -247,7 +292,6 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: '100%',
-    color: '#fff',
     fontSize: 16,
   },
   passwordToggleIcon: {
@@ -280,27 +324,22 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   termsText: {
-    color: '#888',
     fontSize: 13,
   },
   privacyPolicyText: {
-    color: '#b09971',
     fontWeight: 'bold',
   },
   signInLink: {
     marginTop: 30,
   },
   signInLinkText: {
-    color: '#888',
     fontSize: 14,
   },
   signInLinkHighlight: {
-    color: '#b09971',
     fontWeight: 'bold',
   },
   modalOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
@@ -308,7 +347,6 @@ const styles = StyleSheet.create({
   modalContent: {
     width: '90%',
     height: '80%',
-    backgroundColor: '#1E1E1E',
     borderRadius: 12,
     padding: 20,
   },
@@ -317,19 +355,16 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   policyText: {
-    color: '#E0E0E0',
     fontSize: 14,
     lineHeight: 20,
   },
   closeButton: {
     marginTop: 20,
     padding: 12,
-    backgroundColor: '#b09971',
     borderRadius: 8,
     alignItems: 'center',
   },
   closeButtonText: {
-    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },
