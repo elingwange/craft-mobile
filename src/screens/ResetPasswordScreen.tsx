@@ -13,6 +13,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect, StackActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { resetPassword } from '../services/AuthApi';
 
 // 定义你的导航器中所有页面的类型
 type RootStackParamList = {
@@ -58,7 +59,7 @@ const ResetPasswordScreen: FC<ResetPasswordScreenProps> = ({ navigation }) => {
     }, []),
   );
 
-  const handleResetPassword = (): void => {
+  const handleResetPassword = async () => {
     // 检查新密码和确认密码是否为空
     if (!newPassword || !confirmPassword) {
       Alert.alert('错误', '所有字段都不能为空。');
@@ -70,16 +71,19 @@ const ResetPasswordScreen: FC<ResetPasswordScreenProps> = ({ navigation }) => {
       return;
     }
 
+    const state = await resetPassword(email, newPassword);
+    if (state) {
+      // API 调用成功
+      // 使用 StackActions.replace 替换整个导航堆栈
+      // 'Auth' 是你在 RootNavigator 中定义的认证堆栈的名称
+      navigation.dispatch(StackActions.replace('Auth'));
+    }
+
     // 在这里添加调用 API 的逻辑，使用从 AsyncStorage 获取的 email
     console.log('重置密码请求发送', {
       email,
       newPassword,
     });
-
-    // 假设 API 调用成功
-    // ✅ 关键修复：使用 StackActions.replace 替换整个导航堆栈
-    // 'Auth' 是你在 RootNavigator 中定义的认证堆栈的名称
-    navigation.dispatch(StackActions.replace('Auth'));
   };
 
   const toggleShowPassword = (): void => {

@@ -7,8 +7,30 @@ import ProfileScreen from '../screens/ProfileScreen';
 import DashboardScreen from '../screens/DashboardScreen'; // 重新添加 DashboardScreen
 import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 
+// 导入任务相关的新屏幕
+import NewIssueScreen from '../screens/NewIssueScreen';
+import EditIssueScreen from '../screens/EditIssueScreen';
+import IssueDetailScreen from '../screens/IssueDetailScreen';
+
 const Tab = createBottomTabNavigator();
 const AppStack = createNativeStackNavigator();
+const IssuesStack = createNativeStackNavigator();
+
+// 新建一个处理所有任务相关页面的堆栈导航器
+const IssuesFlow = () => {
+  return (
+    <IssuesStack.Navigator screenOptions={{ headerShown: false }}>
+      {/* 主要的任务列表页 */}
+      <IssuesStack.Screen name="IssuesList" component={IssuesScreen} />
+      {/* 新建任务页 */}
+      <IssuesStack.Screen name="NewIssue" component={NewIssueScreen} />
+      {/* 编辑任务页 */}
+      <IssuesStack.Screen name="EditIssue" component={EditIssueScreen} />
+      {/* 任务详情页 */}
+      <IssuesStack.Screen name="IssueDetail" component={IssueDetailScreen} />
+    </IssuesStack.Navigator>
+  );
+};
 
 // 定义主要的底部标签栏导航器
 const MainTabs = ({ onLogout }) => {
@@ -35,7 +57,8 @@ const MainTabs = ({ onLogout }) => {
         },
       })}
     >
-      <Tab.Screen name="Issues" component={IssuesScreen} />
+      {/* 将 IssuesScreen 替换为新的 IssuesFlow */}
+      <Tab.Screen name="Issues" component={IssuesFlow} />
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
       <Tab.Screen name="Profile">
         {props => <ProfileScreen {...props} onLogout={onLogout} />}

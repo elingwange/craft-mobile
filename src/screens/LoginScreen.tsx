@@ -33,7 +33,7 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  // ✅ 新增状态：控制隐私政策弹窗的可见性
+  // 新增状态：控制隐私政策弹窗的可见性
   const [isPolicyModalVisible, setPolicyModalVisible] = useState(false);
 
   const handleSignIn = async (): Promise<void> => {
@@ -72,7 +72,7 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
     setShowPassword(prevValue => !prevValue);
   };
 
-  // ✅ 新增函数：打开和关闭隐私政策弹窗
+  // 新增函数：打开和关闭隐私政策弹窗
   const openPolicyModal = (): void => {
     setPolicyModalVisible(true);
   };
@@ -161,14 +161,14 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
         </TouchableOpacity>
         <Text style={styles.termsText}>
           You have read and agree to the{' '}
-          {/* ✅ 关键修复：点击隐私政策文本时打开弹窗 */}
+          {/* 关键修复：点击隐私政策文本时打开弹窗 */}
           <Text style={styles.privacyPolicyText} onPress={openPolicyModal}>
             Privacy Policy
           </Text>
         </Text>
       </View>
 
-      {/* ✅ 新增：隐私政策弹窗 */}
+      {/* 新增：隐私政策弹窗 */}
       {isPolicyModalVisible && (
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>

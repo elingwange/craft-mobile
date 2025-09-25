@@ -8,18 +8,22 @@ interface UserData {
   email: string;
 }
 
-// This function handles the login request
+/**
+ * Handles the login request.
+ * @param userName The user's username.
+ * @param email The user's email.
+ * @param password The user's password.
+ * @returns A Promise that resolves to UserData on success, or null on failure.
+ */
 export const login = async (
   userName: string,
   email: string,
   password: string,
 ): Promise<UserData | null> => {
   try {
-    // 直接使用参数创建请求体对象，避免混淆
     const loginParams = { userName, email, password };
     const params = JSON.stringify(loginParams);
 
-    // ✅ 推荐使用封装好的 API 服务，而不是直接使用 fetch
     const response = await api.post('/users/login', params, {
       headers: {
         'Content-Type': 'application/json',
@@ -28,37 +32,30 @@ export const login = async (
 
     const { token, username, email: userEmail } = response.data;
 
-    // 登录成功，将 token 和用户信息保存到 AsyncStorage
     await AsyncStorage.setItem('userToken', token);
     const userData: UserData = { username, email: userEmail };
     console.log('Login successful, received data:', userData);
 
-    // 关键修复：将对象转换为 JSON 字符串再存储
     await AsyncStorage.setItem('userData', JSON.stringify(userData));
 
     return userData;
   } catch (error: any) {
     console.error('---- Login error:', error);
 
-    // 改进错误处理，区分网络错误和后端返回的错误
     if (error.response) {
-      // 服务器有响应，但状态码不在 2xx 范围内（例如 401, 400, 404）
       const { data, status } = error.response;
       let errorMessage = '服务器返回错误';
 
       if (status === 401) {
         errorMessage = '登录失败。用户名或密码不正确。';
       } else if (data && data.title) {
-        // 后端可能返回带 title 字段的错误信息
         errorMessage = data.title;
       }
 
       Alert.alert('登录失败', errorMessage);
     } else if (error.request) {
-      // 请求已发出但没有收到响应，例如网络连接中断
       Alert.alert('登录失败', '无法连接到服务器。请检查您的网络连接。');
     } else {
-      // 其他未知错误，例如代码执行错误
       Alert.alert('登录失败', '发生未知错误。');
     }
 
@@ -68,7 +65,7 @@ export const login = async (
 
 /**
  * Handles the logout request and token removal.
- * @returns {Promise<boolean>} A promise that resolves to true if logout is successful, false otherwise.
+ * @returns A Promise that resolves to true on successful logout, or false otherwise.
  */
 export const logout = async (): Promise<boolean> => {
   try {
@@ -87,17 +84,22 @@ export const logout = async (): Promise<boolean> => {
   }
 };
 
+/**
+ * Handles the user registration request.
+ * @param userName The user's username.
+ * @param email The user's email.
+ * @param password The user's password.
+ * @returns A Promise that resolves to true on successful signup, or false on failure.
+ */
 export const signup = async (
   userName: string,
   email: string,
   password: string,
 ): Promise<Boolean | null> => {
   try {
-    // 直接使用参数创建请求体对象，避免混淆
     const loginParams = { userName, email, password };
     const params = JSON.stringify(loginParams);
 
-    // 推荐使用封装好的 API 服务，而不是直接使用 fetch
     const response = await api.post('/users/register', params, {
       headers: {
         'Content-Type': 'application/json',
@@ -109,6 +111,59 @@ export const signup = async (
     return false;
   } catch (error: any) {
     console.error('---- Login error:', error);
+    return false;
+  }
+};
+
+/**
+ * Handles the password reset request.
+ * @param userNameOrEmail The user's username or email.
+ * @param newPassword The new password.
+ * @returns A Promise that resolves to true on successful password reset, or false on failure.
+ */
+export const resetPassword = async (
+  userNameOrEmail: string,
+  newPassword: string,
+): Promise<boolean> => {
+  try {
+    const response = await api.post('/users/reset-password', {
+      userNameOrEmail,
+      newPassword,
+    });
+
+    if (response.status === 200) {
+      // 密码重置成功
+      Alert.alert('成功', '密码已成功重置，请使用新密码登录。');
+      return true;
+    }
+
+    // 如果状态码不是 200，但请求成功，也可能返回错误信息
+    Alert.alert('重置失败', response.data?.message || '未知错误');
+    return false;
+  } catch (error: any) {
+    console.error('---- Reset password error:', error);
+
+    // 改进错误处理，区分不同类型的错误
+    if (error.response) {
+      // 服务器有响应，但状态码非 2xx
+      const { data, status } = error.response;
+      let errorMessage = '重置密码失败。';
+
+      if (status === 404) {
+        errorMessage = '找不到用户。请检查您输入的邮箱或用户名。';
+      } else if (data && data.message) {
+        errorMessage = data.message;
+      }
+
+      Alert.alert('重置失败', errorMessage);
+    } else if (error.request) {
+      // 请求已发出但没有收到响应
+      Alert.alert('重置失败', '无法连接到服务器。请检查您的网络连接。');
+    } else {
+      // 其他未知错误
+      Alert.alert('重置失败', '发生未知错误。');
+    }
+
     return false;
   }
 };

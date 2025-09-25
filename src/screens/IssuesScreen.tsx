@@ -61,7 +61,7 @@ const IssuesScreen = ({ navigation }: IssuesScreenProps) => {
   );
 
   const handleNewIssuePress = () => {
-    navigation.navigate('AddIssue');
+    navigation.navigate('NewIssue');
   };
   const handleDashboardPress = () => {
     navigation.navigate('Dashboard');
