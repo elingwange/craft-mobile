@@ -8,11 +8,13 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { signup } from '../services/AuthApi';
+import { privacyPolicyContent } from '../const';
 
 // 定义你的导航器中所有页面的类型
 type RootStackParamList = {
@@ -33,6 +35,8 @@ const RegisterScreen: FC<RegisterScreenProps> = ({ navigation }) => {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   // 新增状态：控制密码可见性
   const [showPassword, setShowPassword] = useState(false);
+
+  const [isPolicyModalVisible, setPolicyModalVisible] = useState(false);
 
   const handleSignUp = async (): Promise<void> => {
     if (!agreeToTerms) {
@@ -60,6 +64,15 @@ const RegisterScreen: FC<RegisterScreenProps> = ({ navigation }) => {
   // 新增函数：切换密码可见性
   const toggleShowPassword = (): void => {
     setShowPassword(prevValue => !prevValue);
+  };
+
+  // ✅ 新增函数：打开和关闭隐私政策弹窗
+  const openPolicyModal = (): void => {
+    setPolicyModalVisible(true);
+  };
+
+  const closePolicyModal = (): void => {
+    setPolicyModalVisible(false);
   };
 
   return (
@@ -151,9 +164,28 @@ const RegisterScreen: FC<RegisterScreenProps> = ({ navigation }) => {
         </TouchableOpacity>
         <Text style={styles.termsText}>
           You have read and agree to the{' '}
-          <Text style={styles.privacyPolicyText}>Privacy Policy</Text>
+          <Text style={styles.privacyPolicyText} onPress={openPolicyModal}>
+            Privacy Policy
+          </Text>
         </Text>
       </View>
+
+      {/* ✅ 新增：隐私政策弹窗 */}
+      {isPolicyModalVisible && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <ScrollView contentContainerStyle={styles.policyScrollView}>
+              <Text style={styles.policyText}>{privacyPolicyContent}</Text>
+            </ScrollView>
+            <TouchableOpacity
+              onPress={closePolicyModal}
+              style={styles.closeButton}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       <TouchableOpacity
         onPress={() => navigation.goBack()}
@@ -265,6 +297,41 @@ const styles = StyleSheet.create({
   signInLinkHighlight: {
     color: '#b09971',
     fontWeight: 'bold',
+  },
+  modalOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  modalContent: {
+    width: '90%',
+    height: '80%',
+    backgroundColor: '#1E1E1E',
+    borderRadius: 12,
+    padding: 20,
+  },
+  policyScrollView: {
+    flexGrow: 1,
+    paddingBottom: 20,
+  },
+  policyText: {
+    color: '#E0E0E0',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  closeButton: {
+    marginTop: 20,
+    padding: 12,
+    backgroundColor: '#b09971',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
 

@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import type { FC } from 'react';
+import React, { useState, type FC } from 'react';
 import {
   View,
   Text,
@@ -8,22 +7,23 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
 import { login } from '../services/AuthApi';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StackActions } from '@react-navigation/native';
+import { privacyPolicyContent } from '../const';
 
 // 定义你的导航器中所有页面的类型
 type RootStackParamList = {
   Login: undefined;
-  Issues: undefined;
   MainApp: undefined;
   Register: undefined;
+  ResetPassword: undefined;
 };
 
-// 确保 LoginScreenProps 包含 navigation 和 route
 type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'> & {
   onLogin: () => void;
 };
@@ -32,8 +32,9 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
-  // 新增状态：控制密码可见性
   const [showPassword, setShowPassword] = useState(false);
+  // ✅ 新增状态：控制隐私政策弹窗的可见性
+  const [isPolicyModalVisible, setPolicyModalVisible] = useState(false);
 
   const handleSignIn = async (): Promise<void> => {
     if (!agreeToTerms) {
@@ -49,7 +50,6 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
     const userData = await login('Rain', email, password);
     if (userData) {
       console.log('Login successful');
-      // ✅ 关键修复：使用 StackActions.replace 替换整个堆栈
       navigation.dispatch(StackActions.replace('MainApp'));
     } else {
       console.log('Login failed');
@@ -68,9 +68,17 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
     setAgreeToTerms(prevValue => !prevValue);
   };
 
-  // 新增函数：切换密码可见性
   const toggleShowPassword = (): void => {
     setShowPassword(prevValue => !prevValue);
+  };
+
+  // ✅ 新增函数：打开和关闭隐私政策弹窗
+  const openPolicyModal = (): void => {
+    setPolicyModalVisible(true);
+  };
+
+  const closePolicyModal = (): void => {
+    setPolicyModalVisible(false);
   };
 
   return (
@@ -146,16 +154,36 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
       <View style={styles.termsContainer}>
         <TouchableOpacity onPress={toggleAgreeToTerms} style={styles.checkbox}>
           {agreeToTerms ? (
-            <Icon name="check-square" size={18} color="#007bff" />
+            <Icon name="check-square" size={18} color="#b09971" />
           ) : (
             <Icon name="square" size={18} color="#888" />
           )}
         </TouchableOpacity>
         <Text style={styles.termsText}>
           You have read and agree to the{' '}
-          <Text style={styles.privacyPolicyText}>Privacy Policy</Text>
+          {/* ✅ 关键修复：点击隐私政策文本时打开弹窗 */}
+          <Text style={styles.privacyPolicyText} onPress={openPolicyModal}>
+            Privacy Policy
+          </Text>
         </Text>
       </View>
+
+      {/* ✅ 新增：隐私政策弹窗 */}
+      {isPolicyModalVisible && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <ScrollView contentContainerStyle={styles.policyScrollView}>
+              <Text style={styles.policyText}>{privacyPolicyContent}</Text>
+            </ScrollView>
+            <TouchableOpacity
+              onPress={closePolicyModal}
+              style={styles.closeButton}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </View>
   );
 };
@@ -232,7 +260,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   forgotPasswordText: {
-    color: '#007bff',
+    color: '#b09971',
     fontSize: 14,
     marginBottom: 30,
   },
@@ -271,8 +299,43 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   privacyPolicyText: {
-    color: '#007bff',
+    color: '#b09971',
     fontWeight: 'bold',
+  },
+  modalOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  modalContent: {
+    width: '90%',
+    height: '80%',
+    backgroundColor: '#1E1E1E',
+    borderRadius: 12,
+    padding: 20,
+  },
+  policyScrollView: {
+    flexGrow: 1,
+    paddingBottom: 20,
+  },
+  policyText: {
+    color: '#E0E0E0',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  closeButton: {
+    marginTop: 20,
+    padding: 12,
+    backgroundColor: '#b09971',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
 
