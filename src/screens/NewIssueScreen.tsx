@@ -1,4 +1,3 @@
-// AddIssueScreen.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -26,7 +25,7 @@ const AddIssueScreen: React.FC = () => {
 
   // ✅ 为新 Issue 设置默认初始状态
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState();
+  const [description, setDescription] = useState('');
   const [status, setStatus] = useState(statusOptionsUI[0]);
   const [priority, setPriority] = useState(priorityOptionsUI[0]);
 
@@ -47,11 +46,15 @@ const AddIssueScreen: React.FC = () => {
       return;
     }
 
+    // ✅ 新增：将 UI 状态转换为 API 所需的格式
+    const apiStatus = status.toLowerCase().replace(/\s/g, '_');
+    const apiPriority = priority.toLowerCase();
+
     const newIssueData = {
       title,
       description,
-      status, // 注意：如果API需要小写，这里要进行转换
-      priority,
+      status: apiStatus,
+      priority: apiPriority,
     };
 
     try {
