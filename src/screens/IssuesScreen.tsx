@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   titleCell: {
-    flex: 3,
+    flex: 4,
     marginRight: 8,
   },
   statusCell: {
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   createdCell: {
-    flex: 2,
+    flex: 1.7,
     textAlign: 'right',
     color: '#999',
   },
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: 'bold',
   },
-  // ✅ 新增的 FAB 样式
+  // 新增的 FAB 样式
   fab: {
     position: 'absolute',
     width: 60,

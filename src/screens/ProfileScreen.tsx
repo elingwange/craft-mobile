@@ -48,6 +48,12 @@ const ProfileScreen = () => {
     }, []),
   );
 
+  const handleResetPassword = () => {
+    navigation.navigate('ResetPassword');
+  };
+
+  const handleAppearance = () => {};
+
   const handleLogout = () => {
     Alert.alert(
       '确认登出',
@@ -109,12 +115,18 @@ const ProfileScreen = () => {
             <View style={styles.actionsSection}>
               <Text style={styles.actionsTitle}>Settings</Text>
 
-              <TouchableOpacity style={styles.actionButton}>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={handleResetPassword}
+              >
                 <Feather name="lock" size={24} color="#A0A0A0" />
                 <Text style={styles.actionText}>Reset Password</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.actionButton}>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={handleAppearance}
+              >
                 <Feather name="moon" size={24} color="#A0A0A0" />
                 <Text style={styles.actionText}>Change Theme</Text>
               </TouchableOpacity>

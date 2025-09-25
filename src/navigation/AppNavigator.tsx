@@ -1,55 +1,72 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import Feather from 'react-native-vector-icons/Feather';
 import IssuesScreen from '../screens/IssuesScreen';
-import DashboardScreen from '../screens/DashboardScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import IssueDetailScreen from '../screens/IssueDetailScreen';
-import NewIssueScreen from '../screens/NewIssueScreen';
-import EditIssueScreen from '../screens/EditIssueScreen';
+import DashboardScreen from '../screens/DashboardScreen'; // 重新添加 DashboardScreen
+import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 
 const Tab = createBottomTabNavigator();
-const IssuesStack = createNativeStackNavigator();
+const AppStack = createNativeStackNavigator();
 
-// 为 Issue 相关的页面创建一个独立的堆栈导航器
-const IssuesStackScreen = () => (
-  <IssuesStack.Navigator screenOptions={{ headerShown: false }}>
-    <IssuesStack.Screen name="Issues" component={IssuesScreen} />
-    <IssuesStack.Screen name="IssueDetail" component={IssueDetailScreen} />
-    <IssuesStack.Screen name="AddIssue" component={NewIssueScreen} />
-    <IssuesStack.Screen name="EditIssue" component={EditIssueScreen} />
-  </IssuesStack.Navigator>
-);
-
-const AppNavigator = () => {
+// 定义主要的底部标签栏导航器
+const MainTabs = ({ onLogout }) => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: '#FFD700',
-        tabBarInactiveTintColor: 'gray',
-        tabBarStyle: {
-          backgroundColor: '#1E1E1E',
-          borderTopColor: 'transparent',
-        },
         tabBarIcon: ({ color, size }) => {
           let iconName;
           if (route.name === 'Issues') {
-            iconName = 'checkmark-circle-outline';
+            iconName = 'home';
           } else if (route.name === 'Dashboard') {
-            iconName = 'stats-chart-outline';
+            iconName = 'list';
           } else if (route.name === 'Profile') {
-            iconName = 'person-circle-outline';
+            iconName = 'user';
           }
-          return <Ionicons name={iconName} size={size} color={color} />;
+          return <Feather name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: '#b09971',
+        tabBarInactiveTintColor: '#888',
+        tabBarStyle: {
+          backgroundColor: '#1E1E1E',
+          borderTopWidth: 0,
         },
       })}
     >
-      <Tab.Screen name="Issues" component={IssuesStackScreen} />
+      <Tab.Screen name="Issues" component={IssuesScreen} />
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Profile">
+        {props => <ProfileScreen {...props} onLogout={onLogout} />}
+      </Tab.Screen>
     </Tab.Navigator>
+  );
+};
+
+// 定义应用主堆栈，包含标签栏和重置密码页面
+const AppNavigator = ({ onLogout }) => {
+  return (
+    <AppStack.Navigator screenOptions={{ headerShown: false }}>
+      <AppStack.Screen name="MainTabs">
+        {props => <MainTabs {...props} onLogout={onLogout} />}
+      </AppStack.Screen>
+      <AppStack.Screen
+        name="ResetPassword"
+        component={ResetPasswordScreen}
+        options={{
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: '#121212',
+          },
+          headerTintColor: '#E0E0E0',
+          headerTitle: '重置密码',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
+    </AppStack.Navigator>
   );
 };
 

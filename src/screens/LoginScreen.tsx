@@ -13,13 +13,14 @@ import Icon from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
 import { login } from '../services/AuthApi';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { StackActions } from '@react-navigation/native';
 
 // 定义你的导航器中所有页面的类型
 type RootStackParamList = {
   Login: undefined;
   Issues: undefined;
-  MainApp: undefined; // 添加 MainApp 路由
-  Register: undefined; // 添加 Register 路由
+  MainApp: undefined;
+  Register: undefined;
 };
 
 // 确保 LoginScreenProps 包含 navigation 和 route
@@ -27,7 +28,7 @@ type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'> & {
   onLogin: () => void;
 };
 
-const LoginScreen: FC<LoginScreenProps> = ({ navigation, onLogin }) => {
+const LoginScreen: FC<LoginScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
@@ -47,8 +48,9 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation, onLogin }) => {
 
     const userData = await login('Rain', email, password);
     if (userData) {
-      // 登录成功，调用 onLogin 来更新父组件状态
-      onLogin();
+      console.log('Login successful');
+      // ✅ 关键修复：使用 StackActions.replace 替换整个堆栈
+      navigation.dispatch(StackActions.replace('MainApp'));
     } else {
       console.log('Login failed');
     }
@@ -59,8 +61,7 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation, onLogin }) => {
   };
 
   const handleForgotPassword = (): void => {
-    Alert.alert('提示', '前往找回密码页面');
-    console.log('忘记密码');
+    navigation.navigate('ResetPassword');
   };
 
   const toggleAgreeToTerms = (): void => {
@@ -75,7 +76,6 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation, onLogin }) => {
   return (
     <View style={styles.container}>
       <View style={styles.headerLogoContainer}>
-        {/* 假设你有一个本地 logo 文件 */}
         <Image
           source={require('../../assets/images/app_logo2.png')}
           style={styles.logo}
@@ -102,13 +102,11 @@ const LoginScreen: FC<LoginScreenProps> = ({ navigation, onLogin }) => {
           style={styles.input}
           placeholder="Password"
           placeholderTextColor="#888"
-          // 根据 showPassword 状态动态设置 secureTextEntry
           secureTextEntry={!showPassword}
           autoCapitalize="none"
           onChangeText={setPassword}
           value={password}
         />
-        {/* 密码显示/隐藏按钮 */}
         <TouchableOpacity
           style={styles.passwordToggleIcon}
           onPress={toggleShowPassword}
